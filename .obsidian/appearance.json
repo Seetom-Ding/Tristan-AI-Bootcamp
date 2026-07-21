@@ -1,0 +1,8 @@
+{
+  "theme": "moonstone",
+  "interfaceFontFamily": "思源黑体",
+  "baseFontSize": 16,
+  "baseFontSizeAction": true,
+  "cssTheme": "Minimal",
+  "accentColor": "#ffad1f"
+}
