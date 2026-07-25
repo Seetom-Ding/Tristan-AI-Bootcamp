@@ -1,6 +1,6 @@
 # AI Bootcamp Learning State
 
-- **Last Updated**：2026-07-21（Week 1 官方链接与 Review 已补全，尚未评估）
+- **Last Updated**：2026-07-25（CS224N / CS336 后续课程主干已确认，尚未评估）
 - **Current Week**：Week 1
 - **Week Status**：计划已创建，尚未评估
 - **Current Rank**：AI Novice
@@ -68,6 +68,7 @@
 - 第二主线：FlashAttention / CUDA Kernel
 - 后续分支：Distributed Training、LLM Compression / Quantization
 - 原则：Week 9+ 根据能力证据进入，不因方向已确认而跳过 Transformer、性能度量和实验设计基础。
+- 课程安排：Week 5–8 选学 CS224N 的 Transformer / LLM 基础；Week 9+ 以 CS336: Language Modeling from Scratch 为主干，并按评估结果选择作业。
 
 ## Long-term Direction
 
