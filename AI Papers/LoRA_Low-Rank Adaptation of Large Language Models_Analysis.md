@@ -4,7 +4,7 @@
 
 分析依据：
 
-- 本地论文 PDF：`D:\学习\信息研一学习资料\AI Bootcamp\AI Papers\LORA.pdf`
+- 本地论文 PDF：[[LORA.pdf]]
 - [arXiv v2](https://arxiv.org/abs/2106.09685)
 - [Microsoft 官方代码](https://github.com/microsoft/LoRA)
 

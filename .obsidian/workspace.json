@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "1855de9b20abc857",
+        "id": "175926dccd12221e",
         "type": "tabs",
         "children": [
           {
-            "id": "3e2b40286dd0b011",
+            "id": "30eab2d67a69fc75",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Study Plan/Week 1/Day 01.md",
-                "mode": "preview",
+                "file": "AI Papers/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Day 01"
+              "title": "LoRA_Low-Rank Adaptation of Large Language Models_Analysis"
             }
           }
         ]
@@ -205,11 +205,12 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "3e2b40286dd0b011",
+  "active": "30eab2d67a69fc75",
   "lastOpenFiles": [
-    "Study Plan/Week 1/Day 02.md",
-    "Study Plan/Week 1/Day 01.md",
     "AI Papers/LORA.pdf",
+    "AI Papers/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
+    "Study Plan/Week 1/Day 01.md",
+    "Study Plan/Week 1/Day 02.md",
     "AI Papers/LORA.pdf.crdownload",
     "Progress/Learning State.md",
     "CS231n Slides/lecture_3.pdf",
@@ -240,7 +241,6 @@
     "Study Plan/Week 3/Day 02.md",
     "Study Plan/Week 2/Week 2 Goal.md",
     "Study Plan/Week 1/Week 1 Boss.md",
-    "Study Plan/Week 1/Week 1 Goal.md",
-    "Study Plan/Week 2/Week 2 Boss.md"
+    "Study Plan/Week 1/Week 1 Goal.md"
   ]
 }
