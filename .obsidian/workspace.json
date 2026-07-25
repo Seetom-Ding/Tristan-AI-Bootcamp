@@ -11,12 +11,14 @@
             "id": "3e2b40286dd0b011",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "markdown",
               "state": {
-                "file": "AI Papers/LORA.pdf"
+                "file": "Study Plan/Week 1/Day 02.md",
+                "mode": "preview",
+                "source": false
               },
-              "icon": "lucide-file-text",
-              "title": "LORA"
+              "icon": "lucide-file",
+              "title": "Day 02"
             }
           }
         ]
