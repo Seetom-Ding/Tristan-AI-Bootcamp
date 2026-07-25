@@ -11,14 +11,12 @@
             "id": "3e2b40286dd0b011",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "Study Plan/Week 1/Day 01.md",
-                "mode": "source",
-                "source": false
+                "file": "AI Papers/LORA.pdf"
               },
-              "icon": "lucide-file",
-              "title": "Day 01"
+              "icon": "lucide-file-text",
+              "title": "LORA"
             }
           }
         ]
@@ -207,9 +205,11 @@
   },
   "active": "3e2b40286dd0b011",
   "lastOpenFiles": [
+    "Study Plan/Week 1/Day 01.md",
+    "AI Papers/LORA.pdf",
+    "AI Papers/LORA.pdf.crdownload",
     "Progress/Learning State.md",
     "CS231n Slides/lecture_3.pdf",
-    "Study Plan/Week 1/Day 01.md",
     "CS231n Slides/lecture_2.pdf",
     "CS231n Slides/lecture_1_part_1.pdf",
     "README.md",
@@ -219,8 +219,6 @@
     "CS231n Slides/lecture_2.pdf.crdownload",
     "CS231n Slides/lecture_1_part_2.pdf.crdownload",
     "CS231n Slides",
-    "CS231n Slide/lecture_1_part_1.pdf",
-    "CS231n Slide/lecture_1_part_1.pdf.crdownload",
     "Study Plan/Week 1/Day 03.md",
     "Study Plan/Week 1/未命名.md",
     "Study Plan/Week 1/未命名 1.md",
