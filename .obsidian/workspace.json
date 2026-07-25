@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Study Plan/Week 1/Day 02.md",
+                "file": "Study Plan/Week 1/Day 01.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Day 02"
+              "title": "Day 01"
             }
           }
         ]
@@ -207,6 +207,7 @@
   },
   "active": "3e2b40286dd0b011",
   "lastOpenFiles": [
+    "Study Plan/Week 1/Day 02.md",
     "Study Plan/Week 1/Day 01.md",
     "AI Papers/LORA.pdf",
     "AI Papers/LORA.pdf.crdownload",
@@ -216,7 +217,6 @@
     "CS231n Slides/lecture_1_part_1.pdf",
     "README.md",
     "CS231n Slides/lecture_1_part_2.pdf",
-    "Study Plan/Week 1/Day 02.md",
     "CS231n Slides/lecture_3.pdf.crdownload",
     "CS231n Slides/lecture_2.pdf.crdownload",
     "CS231n Slides/lecture_1_part_2.pdf.crdownload",
