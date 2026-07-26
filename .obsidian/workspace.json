@@ -4,19 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "262988b27f13baee",
+        "id": "b9d509cdf703e2af",
         "type": "tabs",
         "children": [
           {
-            "id": "3aff0eda4d410ad2",
+            "id": "6aeb65da20ec6795",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "markdown",
               "state": {
-                "file": "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf"
+                "file": "Study Plan/Week 1/Day 01.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-file-text",
-              "title": "1_Attention_Is_All_You_Need_translation"
+              "icon": "lucide-file",
+              "title": "Day 01"
             }
           }
         ]
@@ -204,21 +206,23 @@
       "latex-paren-math:Convert Active Note \\(\\), \\[\\] to $ / $$": false
     }
   },
-  "active": "3aff0eda4d410ad2",
+  "active": "6aeb65da20ec6795",
   "lastOpenFiles": [
-    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
+    "AI Papers/LLM/LoRA/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
+    "Progress/Learning State.md",
+    "未命名.canvas",
+    "Study Plan/Week 1/Day 01.md",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf",
+    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
     "AI Papers/LLM/3_Language_Models_are_Unsupervised_Multitask_Learners_GPT2/GPT-2.png",
     "AI Papers/LLM/2_BERT_Pre-training_of_Deep_Bidirectional_Transformers_for_Language_Understanding/BERT.png",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/Transformer.png",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/实例.png",
-    "Study Plan/Week 1/Day 01.md",
     "AI Papers/LORA.pdf",
     "AI Papers/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
     "AI Papers/未命名.base",
     "Study Plan/Week 1/Day 02.md",
     "AI Papers/LORA.pdf.crdownload",
-    "Progress/Learning State.md",
     "CS231n Slides/lecture_3.pdf",
     "CS231n Slides/lecture_2.pdf",
     "CS231n Slides/lecture_1_part_1.pdf",
