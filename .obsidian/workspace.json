@@ -11,14 +11,12 @@
             "id": "3aff0eda4d410ad2",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "Study Plan/Week 1/Day 01.md",
-                "mode": "source",
-                "source": false
+                "file": "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf"
               },
-              "icon": "lucide-file",
-              "title": "Day 01"
+              "icon": "lucide-file-text",
+              "title": "1_Attention_Is_All_You_Need_translation"
             }
           }
         ]
@@ -208,10 +206,16 @@
   },
   "active": "3aff0eda4d410ad2",
   "lastOpenFiles": [
+    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
+    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf",
+    "AI Papers/LLM/3_Language_Models_are_Unsupervised_Multitask_Learners_GPT2/GPT-2.png",
+    "AI Papers/LLM/2_BERT_Pre-training_of_Deep_Bidirectional_Transformers_for_Language_Understanding/BERT.png",
+    "AI Papers/LLM/1_Attention_Is_All_You_Need/Transformer.png",
+    "AI Papers/LLM/1_Attention_Is_All_You_Need/实例.png",
+    "Study Plan/Week 1/Day 01.md",
     "AI Papers/LORA.pdf",
     "AI Papers/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
     "AI Papers/未命名.base",
-    "Study Plan/Week 1/Day 01.md",
     "Study Plan/Week 1/Day 02.md",
     "AI Papers/LORA.pdf.crdownload",
     "Progress/Learning State.md",
@@ -221,8 +225,6 @@
     "README.md",
     "CS231n Slides/lecture_1_part_2.pdf",
     "CS231n Slides/lecture_3.pdf.crdownload",
-    "CS231n Slides/lecture_2.pdf.crdownload",
-    "CS231n Slides/lecture_1_part_2.pdf.crdownload",
     "Study Plan/Week 1/Day 03.md",
     "Study Plan/Week 1/未命名.md",
     "Study Plan/Week 1/未命名 1.md",
