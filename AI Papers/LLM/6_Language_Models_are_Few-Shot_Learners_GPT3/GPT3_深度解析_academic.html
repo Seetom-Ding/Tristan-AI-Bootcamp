@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPT-3 论文深度解析 — 学术型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;line-height:1.7;margin:1.5rem 0;border:1px solid var(--border)}
+code{font-family:"SF Mono","Fira Code",monospace;font-size:.9em}
+p{margin:1rem 0}
+strong{color:#111}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}
+td,th{border:1px solid var(--border);padding:.6rem .9rem;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.summary-box{background:linear-gradient(135deg,#f0f4ff,#faf5ff);padding:1.5rem;border-radius:12px;margin:1.5rem 0}
+.summary-box h3{margin:0 0 .5rem;color:var(--accent)}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>Language Models are Few-Shot Learners (GPT-3) — 深度解析</h1>
+<div class="meta">
+  <strong>作者：</strong>Tom B. Brown, Benjamin Mann, Nick Ryder 等 (OpenAI)<br>
+  <strong>论文：</strong><a href="https://arxiv.org/abs/2005.14165">arXiv:2005.14165</a> · NeurIPS 2020 · 引用量 30,000+<br>
+  <strong>代码与 API：</strong>OpenAI API (非开源模型权重)<br>
+  <strong>本文撰写日期：</strong>2026年6月13日
+</div>
+
+<h2>一句话总结</h2>
+<p>GPT-3 将语言模型规模推至前所未有的 <strong>175B 参数</strong>，并证明了：一个足够大的自回归语言模型，在完全不进行梯度更新（冻结参数）的情况下，仅通过<strong>上下文中的 few-shot 示例（In-Context Learning）</strong>，就能在大量 NLP 任务上达到有竞争力甚至 SOTA 的性能。这标志着从"预训练+微调"范式向"预训练+提示"范式的决定性转折。</p>
+
+<div class="summary-box">
+<h3>核心数字速览</h3>
+<table>
+  <tr><td><strong>八档规模</strong></td><td>125M · 350M · 760M · 1.3B · 2.7B · 6.7B · 13B · 175B</td></tr>
+  <tr><td><strong>175B 规格</strong></td><td>96层 · 12288维 · 96头 · 上下文长度 2048</td></tr>
+  <tr><td><strong>训练数据</strong></td><td>Common Crawl (60%) + WebText2 (22%) + Books (8%) + Wikipedia (3%) → 约 300B token</td></tr>
+  <tr><td><strong>Zero-shot CoQA</strong></td><td>81.5 F1 → 超越微调 SOTA</td></tr>
+  <tr><td><strong>Zero-shot TriviaQA</strong></td><td>64.3% → 超越微调 SOTA</td></tr>
+  <tr><td><strong>训练成本 (估计)</strong></td><td>~$12M (微软 Azure AI 超算), 约 3,640 PF-days</td></tr>
+</table>
+</div>
+
+<h2>1. 从 GPT-2 到 GPT-3——规模作为方法论</h2>
+<p>GPT-2 展示了零样本任务迁移的可能性，但性能与有监督方法差距仍然很大（翻译 5 BLEU vs SOTA 45 BLEU）。OpenAI 的核心假设是：<strong>这种差距主要来自规模不足，而非方法缺陷。</strong> GPT-3 的逻辑线索是从 Scaling Laws 论文直接延伸的：$L(N) \propto N^{-0.076}$ 预测着从 1.5B 到 175B 的大幅性能增益。</p>
+
+<p>GPT-3 的方法论与几乎所有之前的 NLP 论文根本不同：<strong>它不做微调。甚至不做梯度更新。所有"适应"发生在推理时——通过给模型喂几个带标签的示例作为上下文。</strong>这种范式被称为 In-Context Learning（上下文学习）。</p>
+
+<h2>2. 三种"不训练"的评估策略</h2>
+<table>
+  <tr><th>策略</th><th>上下文中的示例数</th><th>描述</th></tr>
+  <tr><td><strong>Zero-shot</strong></td><td>0</td><td>仅任务描述 + 输入 → 直接输出</td></tr>
+  <tr><td><strong>One-shot</strong></td><td>1</td><td>1 个示例 (输入→输出对) + 实际输入</td></tr>
+  <tr><td><strong>Few-shot</strong></td><td>10-100</td><td>K 个示例 + 实际输入 (K 受限于 2048 token 上下文)</td></tr>
+</table>
+<p>这三种策略<strong>共享同一个冻结的模型</strong>——没有参数更新。模型从上下文示例中"学会"任务格式和预期输出模式，完全通过前向传播中的注意力机制实现。</p>
+
+<h2>3. 模型架构与训练</h2>
+<p>GPT-3 的架构与 GPT-2 几乎相同——Transformer Decoder，Pre-Norm，Sparse Attention 的变体（在深层使用局部+全局交错注意力模式以降低计算）。关键变化：</p>
+<table>
+  <tr><th>模型</th><th>层数</th><th>$d_{\text{model}}$</th><th>头数</th><th>$d_{\text{head}}$</th><th>Batch Size</th><th>学习率</th></tr>
+  <tr><td>GPT-3 175B</td><td>96</td><td>12288</td><td>96</td><td>128</td><td>3.2M token</td><td>$6 \times 10^{-5}$</td></tr>
+  <tr><td>GPT-2 1.5B</td><td>48</td><td>1600</td><td>25</td><td>64</td><td>512</td><td>$2.5 \times 10^{-4}$</td></tr>
+</table>
+<p>训练数据组成（约 300B token）：Common Crawl（过滤后 410B token，训练时以 60% 权重采样）为最大来源。数据清洗使用了基于 GPT-2 的"质量分类器"来过滤低质量网页。</p>
+
+<h2>4. 实验结果——Few-Shot 范式的实证</h2>
+
+<h3>4.1 语言建模与闭卷问答</h3>
+<table>
+  <tr><th>任务</th><th>GPT-3 Zero-shot</th><th>GPT-3 Few-shot</th><th>此前 SOTA</th></tr>
+  <tr><td>LAMBADA (Acc)</td><td>76.2%</td><td><strong>86.4%</strong></td><td>68.0% (有监督)</td></tr>
+  <tr><td>TriviaQA (Zero-shot)</td><td><strong>64.3%</strong></td><td>71.2%</td><td>~60% (有监督)</td></tr>
+  <tr><td>WebQuestions</td><td>14.4%</td><td><strong>41.5%</strong></td><td>45.5% (有监督)</td></tr>
+  <tr><td>Natural Questions</td><td>14.6%</td><td><strong>29.9%</strong></td><td>31.4% (有监督)</td></tr>
+</table>
+<p style="color:var(--muted);font-size:.85rem;">▲ 表1: GPT-3 在闭卷问答上的零样本/少样本表现。</p>
+
+<p>在 TriviaQA 上，GPT-3 的<strong>零样本</strong>准确率（64.3%）就已经超越了此前<strong>有监督微调</strong>的最佳模型。这意味着 GPT-3 在没有见过任何 TriviaQA 训练样本的情况下，仅靠 WebText 中存储的世界知识，就击败了专门为这个任务设计和训练的模型。</p>
+
+<h3>4.2 翻译、摘要与生成</h3>
+<table>
+  <tr><th>任务</th><th>GPT-3 Few-shot</th><th>有监督 SOTA</th></tr>
+  <tr><td>WMT14 En→Fr</td><td>32.6 BLEU</td><td>~45 BLEU</td></tr>
+  <tr><td>WMT14 Fr→En</td><td><strong>39.2 BLEU</strong></td><td>~40 BLEU</td></tr>
+  <tr><td>CNN/DM 摘要 (ROUGE-L)</td><td>14.4</td><td>41.5</td></tr>
+  <tr><td>CoQA (Zero-shot)</td><td><strong>81.5 F1</strong></td><td>~90 F1 (微调)</td></tr>
+</table>
+<p>翻译相比 GPT-2 有质的飞跃（En→Fr: 5.0 → 32.6 BLEU），但仍落后于专门的有监督系统。摘要任务差距仍然较大，说明需要精确内容复制的生成任务仍是 In-Context Learning 的弱项。</p>
+
+<h3>4.3 小样本下的"涌现"曲线</h3>
+<p>GPT-3 最引人注目的现象是：<strong>从 13B 到 175B，许多任务的 few-shot 性能出现非线性跃升。</strong>在 13B 以下的模型中，few-shot 性能缓慢增长；但在 175B 上，某些任务突然"开窍"——这在算术、翻译和常识推理任务上尤为明显。这是"涌现能力（Emergent Abilities）"概念的最早大规模实证之一。</p>
+
+<h2>5. 局限与争议</h2>
+
+<p><strong>局限 1——推理成本：</strong>175B 参数的 GPT-3 每次前向推理需要约 350GB 显存（FP16），在 2020 年的硬件上部署几乎不现实。OpenAI 通过 API 提供服务而非发布模型权重的决定引发了开源社区的广泛讨论。</p>
+
+<p><strong>局限 2——上下文长度瓶颈：</strong>2048 token 的上下文限制意味着 few-shot 示例数量受到严格限制。对于需要大量背景知识的任务（如多文档 QA），这严重制约了 In-Context Learning 的效果。</p>
+
+<p><strong>局限 3——生成可靠性：</strong>GPT-3 在开放式生成中频繁产生事实错误、逻辑矛盾和"幻觉"。论文坦承模型"对世界的物理常识缺乏理解"。</p>
+
+<p><strong>局限 4——数据污染争议：</strong>训练数据源自 Common Crawl，部分测试集（如 LAMBADA、TriviaQA 的部分样本）可能被包含在训练数据中。虽然作者进行了去重和 n-gram 分析的缓解措施，但完全消除污染在 300B token 的语料上是不可行的。</p>
+
+<h2>6. GPT-3 的遗产——范式转换</h2>
+<p>GPT-3 是"预训练+微调"时代到"预训练+提示"时代的转折点。它用实证证明，<strong>足够大的语言模型可以作为一种"元学习器"——从上下文中的示例推断出任务需求，而不需要任何参数更新</strong>。这一发现直接催生了后续的 InstructGPT/ChatGPT（RLHF 对齐）、Codex（代码生成）和一系列"基础模型"研究。GPT-3 也是第一个引起公众广泛关注的 LLM——它不仅仅是 NLP 社区的研究对象，更成为了媒体报道和政策讨论的主题。</p>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Brown, T., et al. (2020). Language Models are Few-Shot Learners. <em>NeurIPS 2020</em>. arXiv:2005.14165.<br>
+</p>
+
+</body>
+</html>

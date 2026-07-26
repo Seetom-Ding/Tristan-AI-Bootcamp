@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>DreamerV2 深度解读 — 故事型</title>
+<style>:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb}*{margin:0;padding:0}body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}h1{font-size:2rem;margin:0 0 .3rem}h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem}.meta a{color:var(--accent)}blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}p{margin:1rem 0}strong{color:#111}table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}td,th{border:1px solid var(--border);padding:.6rem .9rem}th{background:#f9fafb;font-weight:600}.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}}</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script></head>
+<body>
+
+<h1>DreamerV2：一个小到不可思议的改动，让世界模型在 Atari 上打败了所有"无模型"方法</h1>
+<div class="meta"><strong>作者：</strong>Hafner, Lillicrap, Norouzi, Ba (Google Brain/DeepMind) · <a href="https://arxiv.org/abs/2010.02193">arXiv:2010.02193</a> · ICLR 2021</div>
+
+<h2>你猜——</h2>
+<p>2020 年之前，世界模型（Model-Based RL）有一个公认的"耻辱"：</p>
+<p><strong>它打不过"不建模型"的方法。</strong></p>
+<p>在 Atari 55 个经典游戏上，世界模型方法被 DQN、Rainbow、IQN 这些"不需要理解世界怎么运作、只需要记住什么情况下按什么按钮"的方法远远甩在后面。当时的共识是：Atari 太复杂了——帧快、动作多、奖励稀——<strong>你不可能从像素中精确建模一个游戏世界</strong>。</p>
+<p>然后 DreamerV2 只用了一个改动，把这个共识打碎了。</p>
+
+<h2>"离散"——一个不太像突破的词</h2>
+<p>Dreamer（V1）的世界模型用连续高斯分布来表示隐状态。每个状态是一个均值和方差的浮点数——"不确定的程度是 0.3"。</p>
+<p>这在物理控制任务（控制一只猎豹跑步）上很合理——速度、角度、力的大小都是连续量。但 Atari 不是连续的世界。在 Pac-Man 里，鬼要么在过道左边、要么在右边——不存在"在左边 37%、右边 63% 的叠加态"。在 Space Invaders 里，外星人的下一帧要么向左走、要么向右走——不存在"一半向左一半向右"的模糊方向。</p>
+<p>连续隐空间强迫模型<strong>模糊平均</strong>所有可能的未来——结果就是一个"糊掉的幻觉"。模糊的画面、模糊的过渡。在这个模糊的世界里做出的决策自然也是模糊的。</p>
+<p>DreamerV2 的改动只有一行核心逻辑：<strong>把隐状态从连续换成离散。</strong>不是"0.7"，而是"70% 概率是[1,0,0]，30% 概率是[0,1,0]"。</p>
+<p>离散让模型可以<strong>"下注"</strong>——不是模糊地说"大概是这样的"，而是果断地说"要么 A 要么 B"。对于 Atari 这样的确定性离散世界，这种表达能力是<strong>质变</strong>。</p>
+<blockquote>"The world model uses discrete representations and is trained separately from the policy. DreamerV2 is the first agent that achieves human-level performance on the Atari benchmark by learning behaviors inside a separately trained world model." (Abstract)</blockquote>
+
+<h2>历史性的一刻——Atari 上模型基方法第一次赢了</h2>
+<p>DreamerV2 在 55 个 Atari 游戏上训练 200M 帧后，<strong>中位分数超越了 IQN 和 Rainbow——当时最强的模型-free 方法。</strong></p>
+<p>不仅是"打平"，是<strong>超越</strong>。在相同计算预算下，一个"在想象中学习"的系统打败了"在真实环境中反复试错"的系统。这验证了潜伏已久的假说：<strong>模型基方法的渐近上限高于模型-free 方法</strong>——只是之前我们没把模型建好。</p>
+<p>在连续控制上，DreamerV2 同样有效——它学会了从像素中控制一个人形机器人站立和行走。一个世界模型横跨离散的 Atari 和连续的机器人控制——这是通用世界模型之路的关键里程碑。</p>
+
+<h2>一个被低估的洞察——Straight-Through Estimator</h2>
+<p>离散化有一个技术难题：从分类分布采样是不可导的。而不可导意味着不能反向传播——深度学习的根基断了。DreamerV2 用了 Straight-Through Estimator——老技巧，新威力：前向就用采样的离散值，反向就把梯度直接穿过去。粗糙、但有效。</p>
+<p>这个"粗糙的梯度"之所以能成功，是因为<strong>世界模型提供了一个平滑的中间层</strong>——策略网络不直接接触原始像素的不可微性，它在一个已经被世界模型"平滑化"的隐空间里学习。世界模型吸收了离散采样的噪声，给策略网络留下了干净的梯度信号。</p>
+
+<div class="golden">DreamerV2 用一个词改变了世界模型的历史：<strong>"离散"</strong>。<br>世界不需要模糊平均——<strong>世界是非此即彼的。</strong><br>理解这一点，模型基 RL 终于赢了。</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Hafner, D., et al. (2021). Mastering Atari with Discrete World Models. <em>ICLR 2021</em>. arXiv:2010.02193.
+</p>
+</body></html>

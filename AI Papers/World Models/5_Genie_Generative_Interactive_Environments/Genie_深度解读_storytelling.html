@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Genie 深度解读 — 故事型</title>
+<style>:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb}*{margin:0;padding:0}body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}h1{font-size:2rem;margin:0 0 .3rem}h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem}.meta a{color:var(--accent)}blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}p{margin:1rem 0}strong{color:#111}table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}td,th{border:1px solid var(--border);padding:.6rem .9rem}th{background:#f9fafb;font-weight:600}.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}}</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script></head>
+<body>
+
+<h1>Genie：一个 AI 看完了整个 YouTube 上的 2D 游戏视频，然后自己学会做出可以玩的游戏</h1>
+<div class="meta"><strong>作者：</strong>Bruce, Dennis, Edwards 等 (Google DeepMind) · <a href="https://arxiv.org/abs/2402.15391">arXiv:2402.15391</a> · 2024</div>
+
+<h2>你有没有想过——</h2>
+<p>你看一位朋友在玩一个你从没见过的电子游戏。你看了 60 秒。然后你接过手柄，<strong>直接开始玩了</strong>。</p>
+<p>你从未碰过这个游戏。没有人告诉你"左手柄控制移动、A 键是跳跃"。但你通过<strong>观察</strong>——看朋友的拇指在什么时候按了什么、屏幕上的人物做出了什么反应——自己推断出了"这个动作对应什么控制效果"。</p>
+<p>你刚刚完成了一次 <strong>latent action inference</strong>——从纯观察数据中逆向推断出"动作空间"。</p>
+<p>2024 年，Google DeepMind 让 AI 做到了同样的事。它叫 <strong>Genie</strong>。</p>
+
+<h2>一个 11B 参数的 AI 看完了互联网上的无数平台游戏视频——然后它学会了做出可以玩的游戏</h2>
+<p>此前所有的世界模型（PlaNet、Dreamer 系列）都有一个隐藏的"作弊"：<strong>训练数据包含了"动作标签"</strong>。模型知道"这一帧时玩家按了左键"、"那一帧时按了跳跃"。这就像你学开车时，教练不仅给你看前方的画面，还告诉你"现在方向盘往右打了 15 度"。</p>
+<p>但互联网视频<strong>没有动作标签</strong>。YouTube 上有一段 10 分钟的《超级玛丽》通关视频——你可以看到马里奥在屏幕上的运动，但你<strong>看不到</strong>玩家按了什么键。按下跳跃键和屏幕上马里奥跳起之间的那个关系，<strong>没有被记录下来</strong>。</p>
+<p>这个缺失直接堵死了"从互联网视频学习世界模型"的路——直到 Genie。</p>
+
+<h2>Latent Action Model——"我不知道你按了什么键，但我猜出来了"</h2>
+<p>Genie 的核心发明是一个叫 <strong>Latent Action Model</strong> 的东西。它的工作原理可以这样理解：</p>
+<p>Genie 定义了一个"虚空动作空间"——一小撮没有名字、没有语义、纯粹数字的"隐式动作"（比如 8 个离散动作）。对于视频中每一对连续的帧——"前一帧画面 → 下一帧画面"——它问自己：</p>
+<p style="text-align:center;font-size:1.1rem;font-weight:600;color:var(--accent);">"如果我只用这 8 个动作来解释<strong>所有</strong>视频中的<strong>所有</strong>帧到帧的变化，<br>那么从这帧到下一帧，'最合理'的动作是哪一个？"</p>
+<p>训练过程中，<strong>没有人类告诉它"这是跳跃"</strong>。模型自己通过对海量视频中像素变化模式的统计分析，发现"很多视频中有一种特定的像素运动模式——角色整体向上位移然后下落——我可以把它分配到动作 #3。"然后动作 #3 就自然而然地成为了"跳跃"。</p>
+<p>论文这样描述这个过程：</p>
+<blockquote>"Genie is the first generative interactive environment trained in an unsupervised manner from unlabelled Internet videos. The model can be prompted to generate action-controllable virtual worlds." (Abstract)</blockquote>
+
+<h2>一图胜千言——这些演示让所有人沉默</h2>
+<p>Genie 展示了三种令人震惊的生成能力：</p>
+<ul style="margin-left:1.5rem;line-height:2;">
+  <li><strong>文本 → 游戏世界：</strong>输入"a 2D platformer game"，Genie 生成了一个完整的、可以按键操控的平台游戏。你可以按左右移动、按跳跃——它是一个真正的<strong>交互环境</strong>，不是一段视频。</li>
+  <li><strong>照片 → 交互场景：</strong>给 Genie 一张真实世界照片，它生成一个可交互的虚拟版本。</li>
+  <li><strong>涂鸦 → 可控世界：</strong>你随手画一个火柴人和几个方块，Genie 让这个涂鸦"活"起来——火柴人可以按你的控制移动和跳跃在这个涂鸦世界中。</li>
+</ul>
+<p>这不再是"生成一段视频"。这是<strong>生成一个你可以参与其中的世界</strong>。</p>
+
+<h2>"基础世界模型"——像 GPT-3 之于语言一样</h2>
+<p>Genie 在概念上做了一件和 GPT-3 对语言做的事一样的事：<strong>它证明了用"互联网规模的无监督数据 + 统一架构"可以训练出一个"基础模型"，而这个基础模型可以被提示（prompted）去生成各种各样的具体实例。</strong></p>
+<p>GPT-3 的基础能力是"文本补全"——你给它一段提示词，它补全后面的文本。Genie 的基础能力是"交互环境补全"——你给它一张起始图片（无论来自文字描述、真实照片还是手绘），它补全出一个可以交互的完整环境。</p>
+<p>从 World Models（2018）→ PlaNet（2019）→ Dreamer（2020）→ DreamerV2（2021）→ DreamerV3（2023）→ Genie（2024），我们看到的是一条清晰的轨迹：<strong>从"小规模、动作标注、单任务"的世界模型，走向"互联网规模、无动作标注、任意任务"的基础世界模型</strong>。</p>
+
+<div class="golden">Genie 证明了<strong>世界模型不需要人类告诉它"什么是动作"</strong>。<br>动作空间不是被标注的——它是<strong>从像素的流动中被发现的</strong>。<br>在互联网视频的海洋里，动作自己浮现了出来。</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Bruce, J., et al. (2024). Genie: Generative Interactive Environments. <em>Google DeepMind</em>. arXiv:2402.15391.
+</p>
+</body></html>

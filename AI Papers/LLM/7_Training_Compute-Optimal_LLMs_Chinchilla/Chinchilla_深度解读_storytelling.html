@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chinchilla 深度解读 — 故事型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>Chinchilla：当 DeepMind 发现"大模型迷信"是一个昂贵的错误</h1>
+<div class="meta">
+  <strong>作者：</strong>Hoffmann, Borgeaud, Mensch 等 (DeepMind) · <a href="https://arxiv.org/abs/2203.15556">arXiv:2203.15556</a> · NeurIPS 2022</div>
+
+<h2>你猜——</h2>
+
+<p>如果给你 1000 万美元训练一个大语言模型，你会怎么花？</p>
+
+<p>2020-2021 年，整个 AI 行业的默认答案是：<strong>把大部分钱花在增加模型参数上。</strong></p>
+
+<p>GPT-3 有 175B 参数，但只用了约 300B token 训练。Gopher 有 280B 参数，也是约 300B token。MT-NLG 做到了 530B 参数。每家大公司都在比"谁的模型更大"。</p>
+
+<p>这个风气源自 OpenAI 的 Scaling Laws 论文——它说最优配置是"多增模型、少增数据"，比例约 5:2。OpenAI 按照这个公式做了 GPT-3。</p>
+
+<p>但 2022 年，DeepMind 的一个团队发现了一个惊人的事实：</p>
+
+<p style="text-align:center;font-size:1.2rem;font-weight:600;color:var(--accent);"><strong>那个公式是错的。GPT-3、Gopher、MT-NLG——所有这些超大模型——都严重"训练不足"。</strong></p>
+
+<p>他们做了一个 70B 参数的小模型（比 GPT-3 小 2.5 倍），但用 4 倍的数据训练它。结果：<strong>这个小模型打趴了所有"大块头"。</strong></p>
+
+<p>他们把这个模型命名为 Chinchilla——一种比老鼠大不了多少的南美啮齿动物。名字本身就是一种幽默的挑衅。</p>
+
+<h2>OpenAI 的 Scaling Laws 哪里算错了？</h2>
+
+<p>核心问题在于实验设计。OpenAI 的做法是：对不同规模的模型，<strong>都用同样的训练步数</strong>。然后观测损失——发现大模型损失降得更多。</p>
+
+<p>但这有一个盲点：<strong>大模型在同样的步数下"吃得更多"</strong>——它处理了更多的 token（因为 batch size 更大或参数更多=每个样本的计算量更大）。所以观测到的"大模型更好"可能不是因为模型大，而是因为<strong>它在同等步数下"学"了更多数据</strong>。</p>
+
+<p>DeepMind 做了一个更干净的实验。他们问的不再是"固定步数下谁最好"，而是：</p>
+
+<p style="text-align:center;font-size:1.1rem;font-weight:600;color:var(--accent);">"给定 X FLOPs 的计算预算，<br>(模型大小, 数据量) 的哪个组合能达到最低的损失？"</p>
+
+<p>他们用了三种不同的数学方法回答这个问题——IsoFLOP 曲线、参数化拟合、理论推导。<strong>三种方法给出了同一个答案。</strong></p>
+
+<p>模型规模和数据量应该<strong>等比增长</strong>——不是 5:2，是 1:1。计算预算翻 10 倍 → 模型增大约 3.2 倍，数据也增大约 3.2 倍。</p>
+
+<p>OpenAI 的公式 $N_{opt} \propto C^{0.73}$ 应该改为 $N_{opt} \propto C^{0.50}$。</p>
+
+<h2>一个 70B 的小模型如何击败了一群 200B+ 的巨头？</h2>
+
+<p>按照修正后的 Chinchilla 定律，DeepMind 训练了一个"小而精"的模型：</p>
+<ul style="margin-left:1.5rem;line-height:2;">
+  <li><strong>参数：70B</strong>（GPT-3 的 40%, Gopher 的 25%）</li>
+  <li><strong>训练数据：1.4 万亿 token</strong>（GPT-3 的 4.7 倍, Gopher 的 4.7 倍）</li>
+  <li><strong>训练计算量：反而更小</strong></li>
+</ul>
+
+<p>结果令人震惊——Chinchilla 在绝大多数基准上<strong>击败了所有更大的模型</strong>。在 MMLU（大规模多任务语言理解）上：</p>
+
+<table>
+  <tr><th>模型</th><th>参数量</th><th>训练 Token</th><th>MMLU</th></tr>
+  <tr><td>GPT-3</td><td>175B</td><td>300B</td><td>43.9%</td></tr>
+  <tr><td>Gopher</td><td>280B</td><td>300B</td><td>60.0%</td></tr>
+  <tr><td style="background:#d4e4fc"><strong>Chinchilla</strong></td><td style="background:#d4e4fc"><strong>70B</strong></td><td style="background:#d4e4fc"><strong>1.4T</strong></td><td style="background:#d4e4fc"><strong>67.5%</strong></td></tr>
+</table>
+
+<p>70B 战胜 280B——<strong>小了 4 倍的模型，赢了 7.5 个百分点的理解能力。</strong></p>
+
+<h2>这个消息对全行业意味着什么？</h2>
+
+<p>Chinchilla 的发现不只是学术纠正。它对所有正在训练大模型的公司来说，是一个<strong>现实的商业决策指导</strong>。</p>
+
+<p>按照旧的 Scaling Laws，如果你有 1000 万美元，你会训练一个巨大的模型但只喂少量数据。Chinchilla 告诉你——别这么做。把模型做小一半，把省下来的钱用来<strong>整理更多、更好的数据</strong>。最终的模型<strong>反而更好</strong>。</p>
+
+<p>这个洞察直接影响了后续所有基础模型的训练策略。Meta 的 LLaMA 系列（7B-65B）显式遵循了 Chinchilla 定律——用小模型 + 超大数据的策略，以不到 GPT-3 一半的参数超越了 GPT-3 的性能。Falcon、Mistral 等高效模型也走了同样的路线。</p>
+
+<p>论文最后的陈述总结了这个范式转换：</p>
+
+<blockquote>"Current large language models are significantly undertrained... we find that for compute-optimal training, the model size and the number of training tokens should be scaled equally." (Section 7)</blockquote>
+
+<h2>Chinchilla 定律也在被继续修正</h2>
+
+<p>就像 Chinchilla 修正了 OpenAI 的 Scaling Laws 一样，Chinchilla 定律也在被后续工作继续测试和调整。Llama 3 在 15T+ token 上训练 8B 和 70B 模型，远超 Chinchilla 预测的"计算最优"数据量——却得到了更好的结果。这暗示着<strong>推理阶段的计算成本</strong>也是一个需要纳入考虑的因素：小模型推理更便宜，因此值得"过度训练"（用比 Chinchilla 预测的更多的数据）来换取推理时的效率。</p>
+
+<p>Chinchilla 的历史意义不在于给出了终极真理——而在于<strong>打破了"大模型必胜"的盲目迷信</strong>，并将"数据效率"推上了与"模型规模"同等重要的位置。</p>
+
+<div class="golden">
+  最好的模型不是最大的模型。<br>
+  最好的模型是在<strong>每一分算力都花在刀刃上</strong>的模型。<br>
+  Chinchilla 用一只"小老鼠"告诉世界：<strong>数据不是辅助品。数据是智能的原材料。</strong>
+</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Hoffmann, J., et al. (2022). Training Compute-Optimal Large Language Models. <em>NeurIPS 2022</em>. arXiv:2203.15556.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T5 深度解读 — 故事型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;line-height:1.7;margin:1.5rem 0;border:1px solid var(--border)}
+code{font-family:"SF Mono","Fira Code",monospace;font-size:.9em}
+p{margin:1rem 0}
+strong{color:#111}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}
+td,th{border:1px solid var(--border);padding:.6rem .9rem;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>T5：当 Google 团队决定把"所有 NLP 问题"变成一个填空题</h1>
+<div class="meta">
+  <strong>作者：</strong>Raffel, Shazeer, Roberts 等 (Google) · <a href="https://arxiv.org/abs/1910.10683">arXiv:1910.10683</a> · JMLR 2020</div>
+
+<h2>你有没有想过——</h2>
+
+<p>假设你要给十个任务写代码——翻译、摘要、情感分类、问答、语法检查……传统的做法是：为每个任务设计一个专门的模型头，写不同的损失函数，调整不同的超参数。</p>
+
+<p>但 Google 的 T5 团队问了一个看似天真、实则深刻的问题：</p>
+
+<p style="text-align:center;font-size:1.2rem;font-weight:600;color:var(--accent);"><strong>如果所有 NLP 任务本质上都是"给一句话，回一句话"呢？</strong></p>
+
+<p>这个问题的答案就是 T5——一个把所有 NLP 问题统一成"填空题"的系统。</p>
+
+<h2>从"翻译专用模型"到"给我一段文本我都能回一段文本"</h2>
+
+<p>你要做翻译？输入是：<code>translate English to German: That is good.</code> 模型输出：<code>Das ist gut.</code></p>
+
+<p>你要做摘要？输入是：<code>summarize: [一篇文章]</code> 模型输出：<code>[一段摘要]</code></p>
+
+<p>你要做情感分类？输入是：<code>sst2 sentence: This movie is great.</code> 模型输出：<code>positive</code></p>
+
+<p>不光是输入统一了——<strong>连输出也统一了</strong>。分类标签不再是 0/1 索引，而是"positive"/"negative"这些<strong>自然语言 token</strong>。模型不需要知道什么是"分类头"和"span 预测头"——它只知道一件事：读文本、写文本。</p>
+
+<p>这就像给所有 NLP 任务设计了一套统一的"API"——输入是一段带指令的文本，输出是一段回应文本。简单得像个填空游戏。</p>
+
+<p>论文这样描述这个核心理念：</p>
+
+<blockquote>"...we propose a unified framework that converts all text-based language problems into a text-to-text format." (Section 1)</blockquote>
+
+<h2>一场史无前例的"消融实验马拉松"</h2>
+
+<p>T5 论文最让人佩服的不是最终结果——而是<strong>它花了巨大的篇幅系统性地实验了每一种可能的组合</strong>。</p>
+
+<p>你想想：如果想找出最好的预训练设置，你需要尝试 × 不同架构 × 不同预训练目标 × 不同数据集 × 不同微调策略。在 2019 年，这些实验每一个都需要在 TPU 上跑好几天。</p>
+
+<p>T5 团队做了——所有组合。这篇论文像一本"NLP 预训练实验手册"。</p>
+
+<p>几个最关键的发现在于：</p>
+
+<p><strong>第一，Encoder-Decoder 架构最好。</strong>不是因为它更深或更新——就是因为它把"理解"和"生成"分给了两个不同的子网络。编码器可以双向理解输入，解码器可以单向生成输出。各司其职，比一个人干两份活要高效得多。就像一个翻译——一边读原文（encoder），一边写译文（decoder），自然比边读边写要准确。</p>
+
+<p><strong>第二，Span Corruption 是最好的预训练目标。</strong>BERT 的做法是随机遮住 15% 的单个 token 并逐个预测。T5 的做法更激进：遮住<strong>连续的整段文字</strong>，让模型一次性恢复这些片段。比如原文"Thank you for inviting me to your party last week"，T5 可能遮成"[X] me to your party [Y]"，模型需要输出"[X] Thank you for inviting [Y] last week"。这比逐 token 预测更像真实写作——你写文章时是思考"接下来一段写什么"，而不是"下一个字是什么"。</p>
+
+<p><strong>第三，C4 数据集虽然简单但极其有效。</strong>原始 Common Crawl 是互联网的"垃圾堆"——菜单、广告、代码、脏话、重复内容混在一起。T5 团队从这个垃圾堆里淘出了一个 750GB 的"黄金语料库"——只用了几条简单的过滤规则（去掉含脏话的页面、去掉代码、去重）。</p>
+
+<h2>一个"统一理论"的威力</h2>
+
+<p>T5 用它的 text-to-text 框架在 GLUE 上拿了 89.7 分，SuperGLUE 上拿了 89.3 分，CNN/DailyMail 摘要上 ROUGE-L 达到 41.48。</p>
+
+<p>但这些数字不是重点。重点是：<strong>同一个模型、同一个训练流程、同一个损失函数，在所有任务上都拿到了接近 SOTA 或 SOTA 的结果</strong>。翻译任务？同模型。摘要？同模型。问答？同模型。</p>
+
+<p>这就像一个音乐家，你给他一份乐谱（任务前缀+输入），不管是钢琴曲、小提琴曲还是交响乐谱，他都能演奏——因为他掌握了音乐的底层逻辑，而不是某种乐器的特化技巧。</p>
+
+<p>论文里的这句话是整篇研究的哲学内核：</p>
+
+<blockquote>"Our goal is not to propose new methods but to provide a comprehensive perspective on where the field stands." (Section 1)</blockquote>
+
+<p>但讽刺的是——因为做得太彻底、太系统，这篇"不想提出新方法"的论文反而成为了最被广泛使用的方法。今天的 Flan-T5、Gemini、甚至很多非 Google 的 LLM，都吸收了 T5 的 text-to-text 哲学。</p>
+
+<h2>当然，这个万能框架也有不灵的时候——</h2>
+
+<p>把一切强塞进"文本进、文本出"的框架也存在问题。比如语法解析——本来是一棵树结构，T5 必须把它序列化成括号表达式。这就像把一张电路图描述成文字——能描述，但不如直接画图自然。</p>
+
+<p>此外，T5 的 11B 参数模型虽然强大，但在对话和多轮交互上完全不如后来 ChatGPT 的 RLHF 对齐——因为它没有被训练去"遵循指令"。这个短板后来被 Flan-T5 通过指令微调部分修补了。</p>
+
+<p>但这些局限只是说明：一个伟大的框架不在于它解决了所有问题，而在于<strong>它把正确的问题摆到了桌面上</strong>。T5 把"文本到文本"这个看似简单的想法制度化、系统化了，后来的所有人都可以在这个基础上往前走。</p>
+
+<div class="golden">
+  T5 没有发明新架构，没有设计新损失函数——它只是把所有 NLP 任务统一成了一件事：<br><strong>"读懂一段话，写出一段话。"</strong><br>有时候，最深刻的突破不是添加新东西，而是认清：原来一切都可以如此简单。
+</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Raffel, C., et al. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. <em>JMLR</em>. arXiv:1910.10683.
+</p>
+
+</body>
+</html>

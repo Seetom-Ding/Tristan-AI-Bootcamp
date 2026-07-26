@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPT-3 深度解读 — 故事型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>GPT-3：一个 1750 亿参数的模型，让全世界重新理解了"学习"这个词</h1>
+<div class="meta">
+  <strong>作者：</strong>Brown, Mann, Ryder 等 (OpenAI) · <a href="https://arxiv.org/abs/2005.14165">arXiv:2005.14165</a> · NeurIPS 2020</div>
+
+<h2>你有没有想过——</h2>
+
+<p>你第一次教一个小孩"什么是狗"。你给他看一张狗的图片，说"这是狗"。然后你给他看一张猫的图片，说"这不是狗，这是猫"。你给他看了三张图。然后你拿出一张他从没见过的狗的照片——<strong>他立刻说"狗"</strong>。</p>
+
+<p>这就是 few-shot learning。人类特有的能力——从极少数示例中学习一个新概念。</p>
+
+<p>2020 年，一个拥有 1750 亿参数的 AI 模型证明了：<strong>它也可以。</strong>而且它做到这件事的方式，与所有先前的 AI 模型<strong>根本不同</strong>——它没有更新任何参数。没有训练。没有微调。它只是在"看"了几个例子之后，<strong>突然就会了</strong>。</p>
+
+<h2>"不训练就学会"——一个不该成立但偏偏成立的悖论</h2>
+
+<p>在 GPT-3 之前，NLP 的标准工作流是：</p>
+<ol style="margin-left:1.5rem;line-height:2;">
+  <li>在大规模无标注文本上预训练一个模型</li>
+  <li><strong>收集你要做的具体任务的标注数据</strong>（比如：情感分类需要几千条"正面/负面"标签）</li>
+  <li>在这些标注数据上微调模型的参数</li>
+  <li>得到你的任务模型</li>
+</ol>
+
+<p>GPT-3 完全跳过了步骤 2、3 和 4。</p>
+
+<p>它的使用方式是：你给模型一段文本，文本里包含你想要它完成的任务的描述，以及<strong>几个示例</strong>——就像这样：</p>
+
+<pre>Translate English to French:
+sea otter → loutre de mer
+peppermint → menthe poivrée
+plush giraffe → girafe peluche
+cheese →</pre>
+
+<p>然后 GPT-3 直接在 <code>cheese →</code> 后面接上 <code>fromage</code>。</p>
+
+<p>它没有被训练过翻译。没有人告诉它"这是一个翻译任务"。它只是——<strong>从上下文中的三个例子推断出了"哦，这是在把英文词翻成法文词"</strong>——然后照做了。</p>
+
+<p>论文把这个过程称为 <strong>In-Context Learning（上下文学习）</strong>。GPT-3 参数在整个推理过程中<strong>完全冻结</strong>。从"不知道要做什么"到"知道要做什么"——模型的行为改变了——但它的权重没有改变。所有的"学习"都发生在前向传播的注意力计算中。</p>
+
+<p>论文这样描述这个核心现象：</p>
+
+<blockquote>"...the language model develops a broad set of skills and pattern recognition abilities during pre-training, and then uses those abilities at inference time to rapidly adapt to or recognize the desired task." (Section 1)</blockquote>
+
+<h2>从 1.5B 到 175B——规模不是改进，规模是质变</h2>
+
+<p>GPT-2 的发现是：零样本任务迁移<strong>是可能的</strong>。GPT-3 的发现是：<strong>当规模超过某个阈值时，这种能力会突然变得非常强。</strong></p>
+
+<p>最戏剧性的例子是算术。GPT-3 的 Small 模型（125M）在两位数加法上的准确率接近 0%。350M、760M、1.3B……慢慢涨。到了 6.7B，开始出现非零的准确率。到了 175B——<strong>两位数加法准确率超过 90%</strong>。</p>
+
+<p>这不像是一个渐进的过程。这像是<strong>某个能力"突然冒出来"了</strong>。当代 AI 研究者把这个现象叫做"涌现"（Emergence）——系统在达到一定复杂度后突然展现出其组成部分完全不具备的新性质。</p>
+
+<p>就像水分子没有"湿度"，但足够多的水分子突然就有了。GPT-3 在 175B 这个点上，<strong>某些能力突然"湿了"</strong>。</p>
+
+<h2>一个没有训练过的模型，如何打败受过专门训练的模型？</h2>
+
+<p>最令人难以置信的数据藏在 GPT-3 的问答实验结果里。</p>
+
+<p>TriviaQA 是一个百科知识问答任务——"谁是美国第一任总统？"类型的问题。在 GPT-3 之前，所有最好的 TriviaQA 系统都是专门为这个任务设计和训练的。它们使用信息检索系统从维基百科中找到相关段落，然后用阅读理解模型从中提取答案。</p>
+
+<p>GPT-3 做了完全不同的事。它<strong>没有检索任何外部文档</strong>。你问它一个问题，它直接凭"记忆"回答。这叫"闭卷问答"。</p>
+
+<p>结果：GPT-3（零样本）在 TriviaQA 上拿了 64.3% 的准确率——<strong>超越了此前所有有监督训练的开放域问答系统</strong>。</p>
+
+<p>这意味着什么？意味着 GPT-3 在它的训练数据（300B token 的网页和书籍）中看到并"记住"了足够多的世界知识，以至于它不需要查阅任何参考资料，就能在百科知识问答上击败需要搜索维基百科的专门系统。</p>
+
+<p>这就像一个人读了几百万本书之后——不需要查资料——就能回答"谁写了《1984》"。</p>
+
+<blockquote>"GPT-3 achieves promising results in the zero-shot and one-shot settings, and in the few-shot setting is sometimes competitive with or even occasionally surpasses state-of-the-art." (Abstract)</blockquote>
+
+<h2>但 175B 的模型也有搞不定的事</h2>
+
+<p>GPT-3 在生成冗长、连贯的文本时容易出现"跑题"和幻觉。它可能在同一篇文章中自相矛盾——前一段说"地球是圆的"，后面又说"地球是扁的"。这不是因为它"笨"，而是因为它<strong>不理解自己在说什么</strong>——它只是在模式匹配下一个最可能的 token。</p>
+
+<p>摘要仍然是一个显著的弱项——GPT-3 的 ROUGE-L 远不如有监督摘要模型。数学推理虽然比小模型好很多，但两位数加法偶尔还会出错。这些都应了论文坦率的自省：</p>
+
+<blockquote>"GPT-3 has notable weaknesses in text synthesis and several NLP tasks. It does poorly at 'common sense physics', and its performance is still far from human-level on reading comprehension." (Section 8)</blockquote>
+
+<h2>GPT-3 到底改变了什么？</h2>
+
+<p>GPT-3 不是第一个大模型。但它<strong>是第一个让非 AI 研究者也感觉到"这件事不一样了"的模型</strong>。它引发了关于 AI 安全、工作替代、虚假信息生成等公共辩论。它催生了 OpenAI API——第一个面向开发者的语言模型即服务。它直接启发了 ChatGPT 的开发方向——InstructGPT 和 RLHF 是专门为修复 GPT-3 的"不听话"问题而设计的。</p>
+
+<p>但从纯学术角度看，GPT-3 最持久的贡献是一个简洁但强有力的陈述：<strong>"学习"不必是梯度下降。注意力本身就是一种学习机制。</strong></p>
+
+<div class="golden">
+  在 GPT-3 之前，"学习"意味着"调参数"。<br>
+  在 GPT-3 之后，"学习"可能只是"给几个例子"。<br>
+  <strong>1750 亿参数教会了世界：规模本身就是一种智能。</strong>
+</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Brown, T., et al. (2020). Language Models are Few-Shot Learners. <em>NeurIPS 2020</em>. arXiv:2005.14165.
+</p>
+
+</body>
+</html>

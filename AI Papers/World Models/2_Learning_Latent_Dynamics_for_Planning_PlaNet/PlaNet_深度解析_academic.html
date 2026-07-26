@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>PlaNet 论文深度解析 — 学术型</title>
+<style>:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}h1{font-size:2rem;margin:0 0 .3rem}h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}h3{font-size:1.1rem;margin:1.5rem 0 .5rem}.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem}.meta a{color:var(--accent)}blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;margin:1.5rem 0;border:1px solid var(--border)}p{margin:1rem 0}strong{color:#111}table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}td,th{border:1px solid var(--border);padding:.6rem .9rem}th{background:#f9fafb;font-weight:600}.summary-box{background:linear-gradient(135deg,#f0f4ff,#faf5ff);padding:1.5rem;border-radius:12px;margin:1.5rem 0}@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}}</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script></head>
+<body>
+
+<h1>Learning Latent Dynamics for Planning from Pixels (PlaNet) — 深度解析</h1>
+<div class="meta">
+  <strong>作者：</strong>Danijar Hafner, Timothy Lillicrap, Ian Fischer 等 (Google Brain / DeepMind)<br>
+  <strong>论文：</strong><a href="https://arxiv.org/abs/1811.04551">arXiv:1811.04551</a> · ICML 2019 · 引用量 2,500+<br>
+  <strong>代码：</strong><a href="https://github.com/google-research/planet">github.com/google-research/planet</a> ✅<br>
+  <strong>本文撰写日期：</strong>2026年6月14日
+</div>
+
+<h2>一句话总结</h2>
+<p>PlaNet 提出了 <strong>Recurrent State-Space Model (RSSM)</strong>——一种结合确定性循环路径和随机路径的隐动力学模型——配合 <strong>latent overshooting</strong> 训练目标，首次实现了从像素输入进行<strong>快速在线规划（MPC）</strong>的模型基 RL，样本效率比 A3C 高出 5000 倍。</p>
+
+<div class="summary-box"><h3>核心数字速览</h3><table>
+<tr><td><strong>核心架构</strong></td><td>RSSM = 确定性 RNN 路径 + 随机状态路径，在隐空间交叉</td></tr>
+<tr><td><strong>规划方法</strong></td><td>Cross-Entropy Method (CEM) + Model Predictive Control (MPC)</td></tr>
+<tr><td><strong>样本效率</strong></td><td>比 A3C 少 5000× 环境交互（部分任务）</td></tr>
+<tr><td><strong>关键训练技巧</strong></td><td>Latent Overshooting — 同时预测未来 1~N 步的隐状态</td></tr>
+</table></div>
+
+<h2>1. 从 World Models 到 PlaNet——"做梦不够，要规划"</h2>
+<p>World Models 证明了 latent dynamics 的可行性，但其 MDN-RNN 在长期预测中累积误差严重——"梦境"在几步之后就偏离真实。PlaNet 通过两个核心创新解决了这个问题：① 将<strong>纯随机模型 (MDN-RNN) 升级为混合型 RSSM</strong>（确定性+随机路径），大幅提升了长期预测精度；② 用<strong>规划（MPC）替代梦境内训练</strong>——不再预先训练一个控制器，而是在每次决策时通过 RSSM 在隐空间中快速模拟多条未来轨迹并选择最优路径。</p>
+
+<h2>2. RSSM——确定性火车 + 随机乘客</h2>
+<p>RSSM 的核心设计理念：<strong>确定性部分（RNN）负责建模环境的"大势"——那些平滑、可预测的动态；随机部分负责建模"细节"——那些多模态、不可精确预测的偶然变化。</strong></p>
+<p>形式化表示：</p>
+$$\text{Deterministic state: } h_t = f(h_{t-1}, s_{t-1}, a_{t-1})$$
+$$\text{Stochastic state: } s_t \sim p(s_t \mid h_t)$$
+$$\text{Observation: } o_t \sim p(o_t \mid h_t, s_t)$$
+<p>这就像天气预报——RNN 部分预测"趋势"（明天冷锋南下），随机部分注入"噪声"（具体的云层分布是概率性的）。</p>
+
+<h2>3. Latent Overshooting——"不只预测下一步，还要预测未来 N 步"</h2>
+<p>标准 RNN 训练只看一步预测损失。PlaNet 的关键创新是<strong>同时优化多步预测</strong>——通过一个改写的变分下界，对从当前时刻到未来 N 步的隐状态序列同时施加约束。这迫使 RSSM 学会<strong>一致而准确的长程动力学</strong>——对于 MPC 规划至关重要。</p>
+<p>在连续控制任务上（如 Cheetah Run, Walker Walk），PlaNet 以 <strong>远少于 A3C/DDPG 的环境交互次数</strong>达到了相当或更好的性能——在某些任务上样本效率差距达到三个数量级。</p>
+
+<h2>4. 局限与影响</h2>
+<p><strong>局限 1——CEM 规划的计算瓶颈：</strong> 每次动作选择需要模拟数千条轨迹，实时性受限。</p>
+<p><strong>局限 2——显式奖励需建模：</strong> PlaNet 额外训练了一个奖励预测器，增加了系统的组件数量。</p>
+<p>PlaNet 的 RSSM 架构被直接继承到 Dreamer 系列中——Dreamer 将"规划"升级为"潜空间反传梯度优化"，进一步提升了效率和终态性能。</p>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Hafner, D., et al. (2019). Learning Latent Dynamics for Planning from Pixels. <em>ICML 2019</em>. arXiv:1811.04551.
+</p>
+</body></html>

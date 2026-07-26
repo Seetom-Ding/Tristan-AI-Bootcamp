@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dreamer 论文深度解析 — 学术型</title>
+<style>:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}*{margin:0;padding:0}body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}h1{font-size:2rem;margin:0 0 .3rem}h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}h3{font-size:1.1rem;margin:1.5rem 0 .5rem}.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem}.meta a{color:var(--accent)}blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;margin:1.5rem 0;border:1px solid var(--border)}p{margin:1rem 0}strong{color:#111}table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}td,th{border:1px solid var(--border);padding:.6rem .9rem}th{background:#f9fafb;font-weight:600}.summary-box{background:linear-gradient(135deg,#f0f4ff,#faf5ff);padding:1.5rem;border-radius:12px;margin:1.5rem 0}@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}}</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script></head>
+<body>
+
+<h1>Dream to Control: Learning Behaviors by Latent Imagination (Dreamer) — 深度解析</h1>
+<div class="meta">
+  <strong>作者：</strong>Danijar Hafner, Timothy Lillicrap, Jimmy Ba, Mohammad Norouzi (Google Brain / DeepMind / UofT)<br>
+  <strong>论文：</strong><a href="https://arxiv.org/abs/1912.01603">arXiv:1912.01603</a> · ICLR 2020 · 引用量 2,800+<br>
+  <strong>代码：</strong><a href="https://github.com/danijar/dreamer">github.com/danijar/dreamer</a> ✅<br>
+  <strong>本文撰写日期：</strong>2026年6月14日
+</div>
+
+<h2>一句话总结</h2>
+<p>Dreamer 继承了 PlaNet 的 RSSM 架构，但做出了一项关键转变：<strong>将"在线规划（MPC）"升级为"从隐空间想象轨迹中解析地反向传播价值梯度"</strong>——通过 world model + actor-critic 在 latent space 中端到端学习行为。这消除了 PlaNet 每次决策需要数千次模拟的计算瓶颈，同时在 20 个 DeepMind Control Suite 任务上全面超越前代方法。</p>
+
+<div class="summary-box"><h3>核心数字速览</h3><table>
+<tr><td><strong>核心创新</strong></td><td>Latent Imagination — 从世界模型生成的想象轨迹中学习 actor-critic</td></tr>
+<tr><td><strong>世界模型</strong></td><td>RSSM (继承 PlaNet)，连续隐空间</td></tr>
+<tr><td><strong>策略学习</strong></td><td>Dreamer 特有的 analytic value gradients：将价值梯度通过想象轨迹反向传播</td></tr>
+<tr><td><strong>测试任务</strong></td><td>20 个 DeepMind Control Suite 任务（像素输入）</td></tr>
+<tr><td><strong>关键提升</strong></td><td>数据效率、计算时间、终态性能三者全面超越 PlaNet 和模型-free 基线</td></tr>
+</table></div>
+
+<h2>1. 从"规划"到"想象"——范式升级</h2>
+<p>PlaNet 使用 MPC（在线规划）做决策——每次动作选择时在当前世界模型中模拟数千条可能轨迹，挑选最优的。这有两个问题：① <strong>推理时计算开销大</strong>（每步都重新规划）；② <strong>规划质量受限于搜索精度</strong>（CEM 是启发式搜索，不保证全局最优）。</p>
+<p>Dreamer 的核心洞见：<strong>世界模型是可微的——为什么不直接把价值梯度通过想象轨迹反向传播，端到端地训练一个策略网络？</strong> 这样，推理时策略网络直接输出动作——O(1) 计算 vs PlaNet 的 O(千次模拟)。</p>
+
+<h2>2. 方法——Latent Imagination</h2>
+<p>Dreamer 的学习流程分为三步循环：</p>
+<ol style="margin-left:1.5rem;line-height:2;">
+  <li><strong>World Model 学习：</strong>从真实环境交互中收集数据，训练 RSSM（同 PlaNet）建模 $p(s_{t+1}|s_t, a_t)$ 和奖励 $p(r_t|s_t)$。</li>
+  <li><strong>Latent Imagination：</strong>从 world model 的先验分布中采样起始状态，使用当前策略 $\pi_\theta$ 在隐空间中生成一段"想象轨迹"：$s_1, a_1, r_1, s_2, a_2, r_2, \ldots, s_T$。</li>
+  <li><strong>策略优化：</strong>在想象轨迹上，使用<strong>解析梯度</strong>（通过值函数 $v_\psi$ 反传）更新 actor $\pi_\theta$ 和 critic $v_\psi$。关键公式：</li>
+</ol>
+$$\text{Actor loss: } \mathcal{L}(\theta) = \mathbb{E}_{\text{imag}} \left[ \sum_t -v_\psi(s_t) \right]$$
+<p>其中 $v_\psi(s_t)$ 是值函数估计的期望回报。由于整个世界模型是可微的，价值梯度可以直接通过想象轨迹反向传播到策略参数。</p>
+
+<h2>3. 实验结果</h2>
+<table>
+  <tr><th>指标</th><th>PlaNet</th><th>A3C</th><th>D4PG</th><th>Dreamer</th></tr>
+  <tr><td>数据效率</td><td>高</td><td>低</td><td>低</td><td><strong>最高</strong></td></tr>
+  <tr><td>计算时间</td><td>高 (MPC)</td><td>低</td><td>低</td><td><strong>低</strong></td></tr>
+  <tr><td>终态性能</td><td>中-高</td><td>低</td><td>高</td><td><strong>最高</strong></td></tr>
+</table>
+<p style="color:var(--muted);font-size:.85rem;">▲ Dreamer 在数据效率、计算时间和终态性能三个维度上同时占优。</p>
+<p>在 20 个 DeepMind Control Suite 任务上，Dreamer <strong>在三个维度上均超越了 PlaNet 和模型-free 基线</strong>（A3C, D4PG）——这是非常罕见的"全方位碾压"。</p>
+
+<h2>4. 局限与遗产</h2>
+<p><strong>局限 1——连续隐空间的表达瓶颈：</strong>Dreamer 使用连续高斯隐变量，在处理多模态过渡和离散结构任务时受限。DreamerV2（2021）通过将隐空间改为离散分类分布解决了这一问题。</p>
+<p><strong>局限 2——价值梯度的偏差：</strong>通过想象轨迹反传的价值梯度依赖于 world model 的精度——模型误差会直接污染策略梯度。</p>
+<p>Dreamer 将"latent imagination"确立为 MBRL 的核心范式，其 actor-critic + world model 架构在 DreamerV2/V3 中持续演进，至今仍是像素级连续控制的最优方案之一。</p>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Hafner, D., et al. (2020). Dream to Control: Learning Behaviors by Latent Imagination. <em>ICLR 2020</em>. arXiv:1912.01603.
+</p>
+</body></html>

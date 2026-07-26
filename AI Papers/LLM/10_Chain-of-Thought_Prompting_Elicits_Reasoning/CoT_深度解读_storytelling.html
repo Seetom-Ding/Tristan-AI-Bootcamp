@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chain-of-Thought 深度解读 — 故事型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>怎么让 AI 学会"动脑子"——只要给它看"解题步骤"就行了</h1>
+<div class="meta">
+  <strong>作者：</strong>Wei, Wang, Schuurmans 等 (Google Brain) · <a href="https://arxiv.org/abs/2201.11903">arXiv:2201.11903</a> · NeurIPS 2022</div>
+
+<h2>你猜——</h2>
+
+<p>小明有 23 颗糖，给了小红 7 颗，又从小刚那里收到 5 颗，然后把一半分给了小丽。他现在有几颗糖？</p>
+
+<p>这是小学三年级的数学题。你应该花了不到 5 秒算出答案。（23 - 7 = 16，16 + 5 = 21，21 ÷ 2 = 10.5……等一下，一半？哦，小明自己留了一半 = 10.5，但糖不能有半颗……OK 我们换个例子。）</p>
+
+<p>但重点是——你解决问题的方式不是直接喊出一个数字。你在脑子里（或者草稿纸上）<strong>一步一步推出来</strong>的。</p>
+
+<p>2021 年，GPT-3 在 GSM8K（一个包含 8000 道小学数学应用题的测试集）上的准确率是 <strong>17.7%</strong>。同样的模型，它在 TriviaQA 上能击败有监督 SOTA。但三年级数学题？<strong>几乎全错。</strong></p>
+
+<p>Google Brain 的一个团队发现了原因——然后想到了一个<strong>简单到不可思议</strong>的解决方案。</p>
+
+<h2>问题不是"模型不会做"——是"没人教它怎么做"</h2>
+
+<p>GPT-3 在做翻译、问答这些任务时，大脑里走过的是：看提示 → 理解任务 → 直接输出答案。这对于"翻译这句话"类型的任务很有效——"巴黎是法国首都"→"Paris is the capital of France"，几乎不需要中间步骤。</p>
+
+<p>但数学题不一样。"小明有 23 颗糖"——<strong>你不可能"一步直觉"算出答案</strong>。你需要：记住初始值 → 做第一步运算 → 存下中间结果 → 做第二步运算 → 检查逻辑 → 输出最终答案。</p>
+
+<p>标准 few-shot 提示中，示例是"问题→答案"的格式。模型看到的是类似这样的东西：</p>
+
+<pre>Q: 小红有 5 颗糖，小明又给了她 3 颗。有几颗？
+A: 8</pre>
+
+<p>模型只能学到"输入问题→直接猜答案"的模式。它<strong>没有看到推理过程</strong>，所以它<strong>不知道该怎么推理</strong>。</p>
+
+<p>CoT 的洞见在这里：</p>
+
+<blockquote>"We explore how generating a chain of thought — a series of intermediate reasoning steps — significantly improves the ability of large language models to perform complex reasoning." (Abstract)</blockquote>
+
+<h2>不是改代码，不是改训练——只是改示例格式</h2>
+
+<p>CoT 方法不改一行代码。它只改<strong>提示</strong>。把 few-shot 示例从：</p>
+
+<pre>Q: 问题 → A: 答案</pre>
+
+<p>改成：</p>
+
+<pre>Q: 问题 → A: 一步一步推理 → 最后答案</pre>
+
+<p>就这样。</p>
+
+<p>GPT-3 在 GSM8K 上的准确率从 <strong>17.7% 跳到了 58.4%</strong>——翻了 3 倍多。谷歌内部代号 PaLM 540B 的模型用 CoT 后达到了 GSM8K 上<strong>超过 90%</strong> 的准确率。</p>
+
+<p>在日期理解上——"明年 5 月 15 日是星期几？"——准确率从 14.2% 飙到 79.6%。提升 <strong>65 个百分点</strong>。</p>
+
+<p>这些不是微调。不是 RLHF。不是新架构。只是——<strong>展示了推理的中间步骤。</strong></p>
+
+<p>就像你跟一个小孩说"这是解题的草稿纸"，他立刻就会用了。</p>
+
+<h2>"只有大模型才配拥有推理能力"——一个不那么好的消息</h2>
+
+<p>CoT 有一个重要的限制：<strong>它只在足够大的模型上才有效。</strong></p>
+
+<p>在 10B 参数以下的模型上，CoT 不仅不提升——有时反而降低准确率。小模型被推理步骤"搞糊涂了"，或者生成了错误的推理链，然后把自己带进沟里。</p>
+
+<p>只有到了 100B+ 的尺度上，CoT 才突然变得极其有效。这个"突然"是字面意思——它不是平滑增长的，而是<strong>像开关一样突然打开的</strong>。</p>
+
+<p>这支持了一个越来越被接受的假说：<strong>推理能力是涌现性质。它不像翻译或问答那样可以从小规模模型上观察到，然后在更大模型上平滑提升。推理有一个"阈值"——低于这个阈值，模型根本不会推理；超过这个阈值，它突然就会了。</strong></p>
+
+<p>这对 AI 研究来说是一个让人既兴奋又不安的消息。兴奋的是——大模型的潜力超乎我们的预期。不安的是——想改善推理？先把模型做到 100B+ 参数再说。</p>
+
+<h2>从 CoT 到 Tree-of-Thought——开枝散叶</h2>
+
+<p>CoT 是一个种子。它证明了"展示推理过程"的价值，然后整个领域开始疯狂地在各种方向上延伸这个想法：</p>
+<ul style="margin-left:1.5rem;line-height:2;">
+  <li><strong>Self-Consistency：</strong>不止生成一个推理链，而是多个，然后投票选出最一致的答案</li>
+  <li><strong>Tree-of-Thought：</strong>在多个推理分支间探索和回溯</li>
+  <li><strong>ReAct：</strong>将推理和行动（调用工具、搜索）交织在一起</li>
+  <li><strong>Auto-CoT：</strong>让模型自己生成推理链作为示例，而不是依靠人手写</li>
+</ul>
+
+<p>而这一切的起点，只是一篇论文的简单洞见：</p>
+
+<div class="golden">
+  AI 不需要被训练成"会思考"。<br>
+  它只需要被<strong>展示</strong>"思考是什么样子的"。<br>
+  剩下的——<strong>它会自己学会</strong>。<br>
+  这就是涌现的真正含义。
+</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Wei, J., et al. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. <em>NeurIPS 2022</em>. arXiv:2201.11903.
+</p>
+
+</body>
+</html>

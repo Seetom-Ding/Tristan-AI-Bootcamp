@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chain-of-Thought 论文深度解析 — 学术型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;line-height:1.7;margin:1.5rem 0;border:1px solid var(--border)}
+code{font-family:"SF Mono","Fira Code",monospace;font-size:.9em}
+p{margin:1rem 0}
+strong{color:#111}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}
+td,th{border:1px solid var(--border);padding:.6rem .9rem;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.summary-box{background:linear-gradient(135deg,#f0f4ff,#faf5ff);padding:1.5rem;border-radius:12px;margin:1.5rem 0}
+.summary-box h3{margin:0 0 .5rem;color:var(--accent)}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>Chain-of-Thought Prompting Elicits Reasoning in Large Language Models — 深度解析</h1>
+<div class="meta">
+  <strong>作者：</strong>Jason Wei, Xuezhi Wang, Dale Schuurmans 等 (Google Brain)<br>
+  <strong>论文：</strong><a href="https://arxiv.org/abs/2201.11903">arXiv:2201.11903</a> · NeurIPS 2022 · 引用量 15,000+<br>
+  <strong>本文撰写日期：</strong>2026年6月13日
+</div>
+
+<h2>一句话总结</h2>
+<p>Chain-of-Thought (CoT) 发现了一个简单而强大的技术：<strong>在提示中给出"中间推理步骤"而非仅"问题→答案"的示例，就能让语言模型在复杂推理任务（算术、常识、符号推理）上实现质的飞跃。</strong> 在 GSM8K 数学推理上，CoT 将 GPT-3 的准确率从 17.7% 提升至 <strong>58.4%</strong>，证明了 LLM 拥有被低估的推理潜力。</p>
+
+<div class="summary-box">
+<h3>核心数字速览</h3>
+<table>
+  <tr><td><strong>GSM8K 数学推理</strong></td><td>标准 prompting: 17.7% → CoT: <strong>58.4%</strong> (+40.7%)</td></tr>
+  <tr><td><strong>SVAMP</strong></td><td>标准: 7.8% → CoT: <strong>46.2%</strong> (+38.4%)</td></tr>
+  <tr><td><strong>StrategyQA 常识</strong></td><td>标准: 54.2% → CoT: <strong>64.7%</strong> (+10.5%)</td></tr>
+  <tr><td><strong>核心技巧</strong></td><td>在 few-shot 示例中展示逐步推理过程，而非直接答案</td></tr>
+  <tr><td><strong>涌现特性</strong></td><td>效果在 100B+ 参数尺度才显著——小模型 CoT 无效甚至有害</td></tr>
+</table>
+</div>
+
+<h2>1. 动机——标准 Few-Shot 提示在推理上的失败</h2>
+<p>GPT-3 的 few-shot 提示在翻译、问答等任务上表现出色，但在需要<strong>多步逻辑推理</strong>的任务上几乎完全失败。例如："小明有 5 颗糖，给了小红 2 颗，又买了 3 颗，现在有几颗？"标准 few-shot 提示给出的是"问题→答案"对的示例。模型试图一步"猜"出答案，而不是逐步计算。</p>
+
+<p>CoT 的洞察是：<strong>给出"问题→推理步骤→答案"的示例，而非"问题→答案"。</strong> 这相当于给模型展示"草稿纸"的使用方法。</p>
+
+<h2>2. 方法——极其简单但极有效</h2>
+<p>CoT 只需要修改 few-shot 提示的格式。标准提示：</p>
+<pre>Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls.
+Each can has 3 tennis balls. How many tennis balls does he have now?
+A: 11</pre>
+<p>Chain-of-Thought 提示：</p>
+<pre>Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls.
+Each can has 3 tennis balls. How many tennis balls does he have now?
+A: Roger started with 5 balls.
+2 cans of 3 tennis balls each is 6 tennis balls.
+5 + 6 = 11.
+The answer is 11.</pre>
+<p>模型仅通过上下文中的推理示例，就学会了<strong>在推理时"自言自语"地分解步骤</strong>——没有参数更新，完全是 In-Context Learning 的延伸。</p>
+
+<h2>3. 实验结果——推理能力的阶梯式跃升</h2>
+<table>
+  <tr><th>任务</th><th>类型</th><th>Standard Few-Shot</th><th>CoT</th><th>提升</th></tr>
+  <tr><td>GSM8K</td><td>数学应用题</td><td>17.7%</td><td><strong>58.4%</strong></td><td>+40.7%</td></tr>
+  <tr><td>SVAMP</td><td>数学应用题</td><td>7.8%</td><td><strong>46.2%</strong></td><td>+38.4%</td></tr>
+  <tr><td>ASDiv</td><td>数学应用题</td><td>—</td><td><strong>71.4%</strong></td><td>—</td></tr>
+  <tr><td>AQuA</td><td>多选代数</td><td>17.9%</td><td><strong>35.2%</strong></td><td>+17.3%</td></tr>
+  <tr><td>MAWPS</td><td>数学应用题</td><td>—</td><td><strong>84.5%</strong></td><td>—</td></tr>
+  <tr><td>StrategyQA</td><td>常识推理</td><td>54.2%</td><td><strong>64.7%</strong></td><td>+10.5%</td></tr>
+  <tr><td>Date Understanding</td><td>时间推理</td><td>14.2%</td><td><strong>79.6%</strong></td><td>+65.4%</td></tr>
+  <tr><td>Sports Understanding</td><td>体育常识</td><td>—</td><td><strong>95.5%</strong></td><td>—</td></tr>
+  <tr><td>Coin Flip</td><td>符号推理</td><td>—</td><td><strong>93.0%</strong></td><td>—</td></tr>
+</table>
+<p style="color:var(--muted);font-size:.85rem;">▲ CoT 在数学、常识、符号推理任务上的表现。数学类任务的提升最为显著（+30~65%）。</p>
+
+<h2>4. 关键特性——CoT 是一种"涌现能力"</h2>
+<p>论文最重要的发现是：<strong>CoT 只有在模型足够大时才有效。</strong> 在 < 10B 参数的模型上，CoT 几乎无效——甚至可能导致性能下降（因为模型被推理步骤"搞糊涂了"）。但在 100B+ 尺度，CoT 突然变得极其有效。这与 GPT-3 论文中观察到的涌现现象一致：某些能力不是被"教会"的，而是在模型达到一定复杂度后<strong>自然涌现</strong>的。</p>
+
+<h2>5. 局限与讨论</h2>
+
+<p><strong>局限 1——推理正确性不可靠：</strong> 即使 CoT 提升了最终答案准确率，模型在推理链中仍然可能犯错——包括逻辑跳跃、计算错误或不一致。CoT 提高了正确率，但<strong>不保证推理过程的正确性</strong>。</p>
+
+<p><strong>局限 2——仅适用于大模型：</strong> CoT 对 100B 以下的模型几乎无益。这意味着改善推理的主要杠杆仍然是"做更大的模型"——成本高昂。</p>
+
+<p><strong>局限 3——敏感于提示设计：</strong> 不同的推理链风格（简洁 vs 详细、数学符号 vs 自然语言）可能导致显著不同的效果。最优提示的选择高度依赖经验和试错。</p>
+
+<h2>6. CoT 的遗产——推理范式的转折点</h2>
+<p>CoT 是当前一代推理增强方法（Self-Consistency, Tree-of-Thought, ReAct, Auto-CoT）的共同起点。它的核心发现——<strong>"展示推理过程"比"展示答案"在提示中更有价值</strong>——直接影响了 GPT-4 的系统提示设计和现代 LLM 应用开发。</p>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Wei, J., et al. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. <em>NeurIPS 2022</em>. arXiv:2201.11903.<br>
+</p>
+
+</body>
+</html>

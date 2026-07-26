@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transformer 深度解读 — 故事型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;line-height:1.7;margin:1.5rem 0;border:1px solid var(--border)}
+code{font-family:"SF Mono","Fira Code",monospace;font-size:.9em}
+p{margin:1rem 0}
+strong{color:#111}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}
+td,th{border:1px solid var(--border);padding:.6rem .9rem;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>Transformer：八个 Google 工程师如何让机器学会"一眼看完全文"</h1>
+<div class="meta">
+  <strong>作者：</strong>Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, Polosukhin (Google Brain)<br>
+  <strong>论文：</strong><a href="https://arxiv.org/abs/1706.03762">arXiv:1706.03762</a> · NeurIPS 2017 · 被引 100,000+</div>
+
+<h2>你有没有想过——</h2>
+
+<p>你在读这句话的时候，你的大脑<strong>同时</strong>看到了"你在读"和"这句话的时候"和"在"——所有词并行输入，一刹那完成理解。</p>
+
+<p>但在 2017 年之前，机器翻译模型做不到这件事。</p>
+
+<p>它们就像一个人蒙着眼睛读一句话——一次只能看到一个词。读到第五个词才能理解第一个词在说什么。读完 100 个词的句子，前面的 50 个词已经是模糊的记忆残影。</p>
+
+<p>这不是因为机器笨。是因为所有的翻译模型都依赖一个叫<strong>循环神经网络（RNN）</strong>的东西。RNN 必须像数珠一样一个个处理 token——看完第一个才能看第二个，看完第二个才能看第三个。100 个词 = 100 步。无法加速，无法跳过。</p>
+
+<p>然后，2017 年夏天，八位 Google 工程师写了一篇论文。标题只有六个单词：</p>
+
+<p style="text-align:center;font-size:1.3rem;font-weight:600;color:var(--accent);">Attention Is All You Need.</p>
+
+<p>它不是在卖关子。它是在陈述一个几乎冒犯 NLP 研究直觉的事实——<strong>你只需要注意力。不需要循环，不需要卷积，不需要任何串行结构。</strong></p>
+
+<h2>先理解"注意力"——其实你每天都在用</h2>
+
+<p>注意力这个概念，在 Transformer 之前就已经存在了。它的本质一点都不复杂。想象你在图书馆查资料。你有一个问题："这本书的第 42 页讲了什么关于 Paris 的内容？"你不会从第 1 页逐字读到 42 页——你会扫一眼目录，定位到第 42 页，然后<strong>集中注意力</strong>读那几段。</p>
+
+<p>机器翻译里的注意力做的是一模一样的事。解码器在生成翻译的每一个词时，不是从整个源语言句子里平均取信息，而是<strong>把"关注度"集中在最相关的几个源语言词上</strong>。比如翻译"我爱吃苹果" → "I love eating apples"，在生成"apples"时，模型会更关注源语言里的"苹果"。</p>
+
+<p>这个想法在 2015 年就被提出来了（Bahdanau et al., 2015），而且在各种翻译模型上效果显著。但所有人都把注意力当成<strong>配角</strong>——RNN 负责读句子，注意力负责在对齐源语言和目标语言时"指指方向"。</p>
+
+<p>Transformer 的疯狂假设是：<strong>为什么需要 RNN？如果注意力已经足够好，直接把 RNN 删掉不行吗？</strong></p>
+
+<h2>三个字说清楚 Transformer 的颠覆性</h2>
+
+<p>RNN 有一个无法绕过的物理学限制：<strong>时间步是串行的</strong>。这就像一条单车道——100 辆车，只能一辆一辆过。GPU 有几千个计算核心同时闲置——因为它们要等"上一辆车先过去"。</p>
+
+<p>Transformer 的设计哲学完全反了过来：<strong>让所有 token 同时看到所有其他 token</strong>。这不是把单车道拓宽——这是直接把道路拆了，让每辆车可以直接和任何其他车自由通信。技术上这叫<strong>自注意力（Self-Attention）</strong>。</p>
+
+<p>论文里有一句精确到残忍的总结：</p>
+
+<blockquote>"The Transformer … is the first transduction model relying entirely on self-attention to compute representations of its input and output without using sequence-aligned RNNs or convolution." (Section 2)</blockquote>
+
+<h2>一个公式的改变——除以根号 d_k 有多重要？</h2>
+
+<p>自注意力的数学形式出奇地简单。假设输入序列有 $n$ 个 token，每个是一个 $d$ 维向量。自注意力做三件事：</p>
+
+<p>第一，给每个 token 分配三个角色——<strong>Query（提问者）、Key（被查找者）、Value（携带信息者）</strong>。想象你在一个会议上，每个人可以同时提问（Q）、提供关键词（K）、分享信息（V）。</p>
+
+<p>第二，计算每对 token 之间的"相关性"——Query 和 Key 的点积。然后除以 $\sqrt{d_k}$，做 softmax 得到一组权重。</p>
+
+<p>第三，用这些权重对所有 Value 做加权平均。</p>
+
+<p>核心公式一行：</p>
+$$\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+
+<p>但这里有一个细节，几乎所有第一次读到它的人都会忽略：<strong>那个 $\sqrt{d_k}$。</strong></p>
+
+<p>你可能会想——除以一个常数有什么好大惊小怪的？</p>
+
+<p>但这件事是整个 Transformer 能训练成功的<strong>最关键的一行代码</strong>。原因如下：当 $d_k$ 比较大的时候（比如 64），$Q$ 和 $K$ 的点积会是一个均值为 0、方差为 $d_k=64$ 的数字。softmax 函数对输入极其敏感——当输入值很大时，softmax 的输出会极端尖锐（接近 one-hot），梯度几乎为 0。除以 $\sqrt{d_k}$ 相当于把方差缩放回 1，让 softmax 保持在一个合理的"软"区域，梯度可以顺畅流动。</p>
+
+<p>不用这个缩放，Transformer 很难训练。用了它，12 层、24 层、甚至 48 层都能稳定收敛。这就是工程中魔鬼般的细节。</p>
+
+<h2>多头注意力——不是"一个注意力"而是"八个注意力同时看"</h2>
+
+<p>如果你只有一个注意力头，它被迫在一个固定的维度空间中关注信息。但语言是多层次的——同一个词在不同语法关系、不同语义角色中扮演不同的功能。一个注意力头很难同时学会所有模式。</p>
+
+<p>Transformer 的做法是把注意力的维度切成 8 份，每份独立计算注意力，最后拼接起来。这就叫<strong>Multi-Head Attention</strong>。就像八个专家各自从不同角度阅读同一段文字——一个人关注主谓结构、一个人关注修饰关系、一个人关注指代关系——然后汇总意见。</p>
+
+<p>论文原话把这个设计动机说得很清楚：</p>
+
+<blockquote>"Multi-head attention allows the model to jointly attend to information from different representation subspaces at different positions." (Section 3.2.2)</blockquote>
+
+<p>而且这不是"增加计算量换取性能"——因为每个头的维度减半了，总计算量和单头全维度注意力<strong>几乎一样</strong>。免费的性能午餐。</p>
+
+<h2>"位置编码"——解决最后一个致命缺陷</h2>
+
+<p>自注意力有一个盲区：它<strong>完全不知道 token 的顺序</strong>。对注意力来说，"猫追老鼠"和"老鼠追猫"是完全一样的输入——它只看 token 之间的相关性，不看谁在前谁在后。</p>
+
+<p>你可能会问：那 RNN 天生知道顺序，为什么注意力就不行？因为 RNN 按时间步处理——先读第一个词，再读第二个，顺序天然编码在处理过程中。自注意力是一次性看所有词，顺序感丢失了。</p>
+
+<p>Transformer 的解决方案极其精巧：<strong>给每个位置加一个"位置指纹"</strong>。这个指纹不是可学习的向量（虽然后来发现可学习版本也 work），而是正弦波的不同频率：</p>
+$$PE_{(pos, 2i)} = \sin\left(pos / 10000^{2i/d_{\text{model}}}\right)$$
+$$PE_{(pos, 2i+1)} = \cos\left(pos / 10000^{2i/d_{\text{model}}}\right)$$
+
+<p>为什么选正弦波？因为有一个漂亮的数学性质：<strong>任何相对偏移都可以用线性变换表示</strong>。位置 5 的编码可以通过位置 3 的编码乘以一个矩阵得到——这意味着模型可以自然地学会"两个 token 之间的距离关系"而不仅仅是"token 在哪个位置"。正弦位置编码就像一个精心设计的"位置坐标系统"，每个维度编码一种不同粒度的时间尺度。</p>
+
+<h2>结果来了——不只是好一点点</h2>
+
+<p>Transformer 在 WMT 2014 英德翻译上拿了 28.4 BLEU。这比当时最好的集成模型还高。在英法翻译上拿了 41.8 BLEU——超越了所有已发表的<strong>单模型</strong>。</p>
+
+<p>但真正的震撼不是数字本身，而是<strong>训练成本</strong>：</p>
+
+<table>
+  <tr><th>模型</th><th>英德 BLEU</th><th>训练计算量</th></tr>
+  <tr><td>ConvS2S（此前 SOTA）</td><td>25.16</td><td>$9.6 \times 10^{18}$ FLOPs</td></tr>
+  <tr><td style="background:#d4e4fc"><strong>Transformer (Big)</strong></td><td style="background:#d4e4fc"><strong>28.4</strong></td><td style="background:#d4e4fc"><strong>$2.3 \times 10^{19}$ FLOPs</strong></td></tr>
+</table>
+
+<p>Transformer Big 的训练计算量确实比 Base 大，但和更早的 GNMT+RL 系统相比，<strong>用差不多的 FLOPs，BLEU 高了近 4 分</strong>。在机器翻译领域，1 个 BLEU 的提升通常需要一篇论文。4 分的提升意味着范式级别的跃迁。</p>
+
+<p>而 Base 模型仅用了 12 小时 × 8 P100 GPU = 约 $3.3 \times 10^{18}$ FLOPs——<strong>不到 ConvS2S 的一半</strong>，BLEU 却高了 2 分。更少算力，更好结果。这几乎是 NLP 领域能想象的最有力的实验论证。</p>
+
+<h2>为什么这篇论文改变了整个世界——不只是翻译</h2>
+
+<p>Transformer 论文发表后，你猜接下来发生了什么？</p>
+
+<p>2018 年，有人取了 Transformer 的 Encoder，加上掩码语言模型预训练，做出了 <strong>BERT</strong>——11 项 NLP 任务全面刷新 SOTA。同年，有人取了 Transformer 的 Decoder，用单向语言模型预训练，做出了 <strong>GPT</strong>——文本生成能力让整个行业震惊。</p>
+
+<p>这就像有人发明了一种全新的发动机，然后一支团队用半个发动机造出了最好的赛车（BERT），另一支团队用另外半个发动机造出了最好的货车（GPT）。再后来，T5 把两个半台拼回去，加上 text-to-text 框架——又是一个 SOTA。</p>
+
+<p>Transformer 不是一个翻译模型。它是一个<strong>通用的序列建模基座</strong>。它不预设任何归纳偏置——没有循环，没有卷积，没有"近处的词比远处的词更重要"这种先验——它只依赖一个简单的原则：<strong>让每个 token 自由地关注所有其他 token</strong>。</p>
+
+<p>这种"少即是多"的设计哲学，给了它极大的普适性。翻译、文本生成、图像识别（ViT）、语音处理、蛋白质结构预测（AlphaFold）——同一个架构在不同的数据模态上反复证明自己的有效性。</p>
+
+<h2>但也必须诚实——</h2>
+
+<p>Transformer 不是没有短板。</p>
+
+<p><strong>第一个问题是 $O(n^2)$ 复杂度。</strong>自注意力的计算量随序列长度平方增长。一个 512 token 的句子没问题，但一篇 10000 token 的文档直接让计算量爆炸。后来的 Longformer、Big Bird 等工作专门解决这个问题——用稀疏注意力把复杂度压回线性。</p>
+
+<p><strong>第二个问题是推理速度。</strong>训练时可以并行喂入整个序列，但推理时解码器必须一个一个 token 地生成——每生成一个新词都要重新跑一遍整个模型。这就像每次你写下一个字之前，都要重读你已经写的所有字。非自回归解码是这个问题的活跃研究方向。</p>
+
+<p><strong>第三个问题是小数据场景。</strong>RNN 的序列归纳偏置在某些低资源任务上可能是优势——Transformer 需要更多数据来"学习"什么是序列。学习到的知识比先验知识更灵活，但前提是有足够的训练数据。</p>
+
+<p>但这些局限并不削弱 Transformer 的革命性。恰恰相反——正是因为它的设计如此简洁，后来者能在它之上做如此多的改进和扩展。一篇好论文解决的问题，比它引入的问题多得多。</p>
+
+<div class="golden">
+  真正伟大的架构不是因为它复杂，而是因为它把正确的事情保持简单。<br>Transformer 只做了一件事——让每个词能看到所有词。<br>然后整个世界都变了。
+</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Vaswani, A., et al. (2017). Attention Is All You Need. <em>NeurIPS 2017</em>. arXiv:1706.03762.<br>
+  <strong>代码：</strong><a href="https://github.com/tensorflow/tensor2tensor">github.com/tensorflow/tensor2tensor</a><br>
+  <strong>本文基于：</strong>论文 arXiv HTML 全文 + 源码阅读
+</p>
+
+</body>
+</html>

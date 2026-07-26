@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>PlaNet 深度解读 — 故事型</title>
+<style>:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}*{margin:0;padding:0}body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}h1{font-size:2rem;margin:0 0 .3rem}h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem}.meta a{color:var(--accent)}blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}p{margin:1rem 0}strong{color:#111}table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}td,th{border:1px solid var(--border);padding:.6rem .9rem}th{background:#f9fafb;font-weight:600}.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}}</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script></head>
+<body>
+
+<h1>PlaNet：让 AI 学会"在脑子里模拟未来"，然后选最好的那条路</h1>
+<div class="meta"><strong>作者：</strong>Hafner, Lillicrap, Fischer 等 (Google Brain/DeepMind) · <a href="https://arxiv.org/abs/1811.04551">arXiv:1811.04551</a> · ICML 2019</div>
+
+<h2>你有没有想过——</h2>
+<p>你在考虑要不要闯过即将变红的黄灯。你的大脑在一瞬间<strong>模拟了好几条不同的未来</strong>——加速冲过去 → 可能撞上侧向来车。猛踩刹车 → 后车追尾。匀速通过 → 刚好赶上绿灯。你迅速评估了每条路径的后果，选了一条。你刚刚就在做<strong>模型预测控制（MPC）</strong>。</p>
+<p>2019 年，Google 的一个团队让 AI 做到了同样的事——不是通过反复在真实世界中试错，而是<strong>在自己的世界模型里"模拟未来"然后规划</strong>。这个系统叫 <strong>PlaNet</strong>。</p>
+
+<h2>World Models 之后——"做梦很美好，但梦着梦着就歪了"</h2>
+<p>World Models 证明了"梦境训练"可行。但有一个核心问题：<strong>MDN-RNN 做长期预测时误差会累积</strong>。预测 10 步之后的世界已经和真实世界截然不同。这就像你在梦里学到了一个完美的网球挥拍姿势——但在现实里你的手臂长度和梦里的不一样，姿势完全不对。梦不能偏差太大。</p>
+<p>PlaNet 的解决方案叫 <strong>RSSM（Recurrent State-Space Model）</strong>。这个设计极其巧妙：它不是纯粹的随机模型（像 MDN-RNN），而是<strong>确定性 RNN + 随机组件</strong>的混合体。</p>
+
+<h2>一个比喻——天气预报和具体云朵</h2>
+<p>确定性 RNN 负责预测"趋势"——冷锋在往南移动，气压在下降。确定性、稳定的动力学。随机组件负责预测"具体细节"——云层在哪里形成、降雨的确切位置——这些都是概率性的。</p>
+<p>两个组件在隐空间中协作。RNN 提供"大方向"，随机部分在大方向上添加合理的"变化"。结果是一个<strong>既准确又不会过度平滑的多步预测</strong>——你预测 50 步之后的画面，大结构还在，细节是合理的模糊而不是幻觉。</p>
+<p>论文的第二个杀手锏是 <strong>Latent Overshooting</strong>——训练时不只看"下一步预测是否准确"，而是<strong>同时优化未来 1 步、2 步、3 步……N 步的预测精度。</strong> 这就像教练不只看你这一次发球，而是要求你整场比赛的每个发球都高质量。持续的精准比单次精准难得多——但回报也大得多。</p>
+<blockquote>"PlaNet combines a latent dynamics model with online planning, achieving high sample efficiency by predicting multiple steps into the future during training." (Section 3)</blockquote>
+
+<h2>5000 倍的样本效率差距</h2>
+<p>在连续控制任务上，PlaNet 的样本效率<strong>碾压</strong>了当时的模型基线 A3C。某些任务上，PlaNet 用 A3C 所需环境交互次数的 <strong>1/5000</strong> 就达到了相同性能。</p>
+<p>这意味着什么？这意味着你不需要让机器人在真实世界中摔 5000 次才能学会走路——它可能在摔 1 次之后就靠"大脑里的模拟"学会了。</p>
+<p>PlaNet 的局限也同样清晰：CEM 规划在每次决策时需要模拟数千条候选轨迹——计算量大，不适合需要毫秒级反应的实时系统。而且它显式需要一个奖励预测模型——这是 Dreamer 后来要解决的短板。</p>
+
+<div class="golden">PlaNet 证明了一个核心洞见：<br><strong>精准的世界模型 + 简单的规划策略 > 粗糙的世界模型 + 复杂的控制器。</strong><br>"模型"比"决策"更重要。</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Hafner, D., et al. (2019). Learning Latent Dynamics for Planning from Pixels. <em>ICML 2019</em>. arXiv:1811.04551.
+</p>
+</body></html>

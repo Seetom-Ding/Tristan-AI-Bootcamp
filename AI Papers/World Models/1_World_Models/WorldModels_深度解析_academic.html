@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Models 论文深度解析 — 学术型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;line-height:1.7;margin:1.5rem 0;border:1px solid var(--border)}
+code{font-family:"SF Mono","Fira Code",monospace;font-size:.9em}
+p{margin:1rem 0}
+strong{color:#111}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}
+td,th{border:1px solid var(--border);padding:.6rem .9rem;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.summary-box{background:linear-gradient(135deg,#f0f4ff,#faf5ff);padding:1.5rem;border-radius:12px;margin:1.5rem 0}
+.summary-box h3{margin:0 0 .5rem;color:var(--accent)}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>World Models — 深度解析</h1>
+<div class="meta">
+  <strong>作者：</strong>David Ha, Jürgen Schmidhuber (Google Brain / NNAISENSE)<br>
+  <strong>论文：</strong><a href="https://arxiv.org/abs/1803.10122">arXiv:1803.10122</a> · 2018 · 引用量 4,000+<br>
+  <strong>代码：</strong><a href="https://github.com/hardmaru/WorldModelsExperiments">github.com/hardmaru/WorldModelsExperiments</a> ✅<br>
+  <strong>本文撰写日期：</strong>2026年6月14日
+</div>
+
+<h2>一句话总结</h2>
+<p>Ha 和 Schmidhuber 提出了 World Models 框架——<strong>通过将强化学习解耦为感知（VAE）、记忆（MDN-RNN）和控制（线性控制器）三个独立模块</strong>，首次实现了"在模型自己的梦境中训练策略、然后直接迁移到真实环境"。这篇论文开创了基于世界模型的强化学习范式。</p>
+
+<div class="summary-box">
+<h3>核心数字速览</h3>
+<table>
+  <tr><td><strong>三组件架构</strong></td><td>V-Model (VAE) → M-Model (MDN-RNN) → C-Model (Linear Controller)</td></tr>
+  <tr><td><strong>V-Model 压缩比</strong></td><td>64×64×3 RGB → 32维 latent vector (压缩约 384×)</td></tr>
+  <tr><td><strong>M-Model 隐状态</strong></td><td>256维 RNN hidden + 32维 latent → 预测下一帧</td></tr>
+  <tr><td><strong>C-Model</strong></td><td>仅 867 参数！通过 CMA-ES 进化策略训练</td></tr>
+  <tr><td><strong>核心实验</strong></td><td>CarRacing-v0, VizDoom — 在梦中训练的策略可直接部署</td></tr>
+</table>
+</div>
+
+<h2>1. 研究动机——RL 的数据效率噩梦</h2>
+<p>2018 年的强化学习面临一个根本瓶颈：<strong>智能体需要与环境进行海量交互（数百万到数十亿次）才能学会完成任务</strong>。在真实机器人或复杂游戏中，每次交互都有时间成本。如果智能体能在"自己的想象"中训练——而不是在真实环境中试错——效率将获得质的飞跃。</p>
+
+<p>Ha 和 Schmidhuber 的灵感来源于人类认知：<strong>我们不是每时每刻都在通过外部感官学习——我们大部分"思考"发生在大脑内部的 mental model 中</strong>。你可以在脑海中预演"如果我把杯子放在桌子边上，它会掉下来"，而不必真的打碎一个杯子。World Models 试图为 AI 构建这样一个"心理世界"。</p>
+
+<h2>2. 三组件架构</h2>
+
+<h3>2.1 V-Model (视觉模型) — VAE 压缩</h3>
+<p>原始观测（64×64×3 RGB 图像）通过一个变分自编码器 (VAE) 压缩为 32 维的 latent vector $z_t$。VAE 的编码器 $q_\phi(z|x)$ 将高维像素映射到紧凑的隐空间；解码器 $p_\theta(x|z)$ 从隐变量重建原始图像。损失函数：</p>
+$$\mathcal{L}_{\text{VAE}} = \mathbb{E}_{q_\phi(z|x)}[\log p_\theta(x|z)] - \beta \cdot D_{KL}(q_\phi(z|x) \parallel p(z))$$
+
+<h3>2.2 M-Model (记忆模型) — MDN-RNN 时序预测</h3>
+<p>M-Model 是一个<strong>混合密度网络 + 循环神经网络 (MDN-RNN)</strong>。它在隐空间中对环境动力学进行建模：给定当前 latent state $z_t$、动作 $a_t$ 和 RNN 隐状态 $h_t$，预测下一时刻的 $z_{t+1}$。MDN 输出的是<strong>高斯混合分布</strong>而非单值——这是因为环境的过渡通常是<strong>多模态</strong>的（同一个动作在不同情境下可能导向截然不同的结果）。</p>
+
+<p>正式地说，MDN-RNN 建模 $P(z_{t+1} | a_t, h_t, z_t)$。M-Model 的输出是若干高斯分布混合的权重、均值和标准差。</p>
+
+<h3>2.3 C-Model (控制器) — 极小线性策略</h3>
+<p>C-Model 是一个<strong>单层线性模型</strong>，仅有 867 个参数。输入为 M-Model 的隐状态 $h_t$ 和当前 latent $z_t$ 的拼接，输出为动作。使用 <strong>CMA-ES (协方差矩阵自适应进化策略)</strong> 进行训练——而非标准的策略梯度。为什么要用进化策略？因为 C-Model 极其小，CMA-ES 的样本效率在这种低维参数空间中非常高。</p>
+
+<h2>3. "梦境训练"——范式级的实验设计</h2>
+<p>这套架构最令人惊叹的实验是：<strong>策略完全在 M-Model 生成的"梦境"（hallucinated rollout）中训练，从未见过真实环境，然后直接部署到真实环境中执行。</strong> 流程为：</p>
+<ol style="margin-left:1.5rem;line-height:2;">
+  <li>收集少量真实 rollout 用于训练 VAE 和 MDN-RNN</li>
+  <li>C-Model 在 MDN-RNN 生成的"梦境轨迹"中用 CMA-ES 进化</li>
+  <li>将训练好的 C-Model + M-Model + V-Model 部署回真实环境</li>
+</ol>
+<p>在 CarRacing-v0 上，"梦境训练"的策略达到了有竞争力的分数——而它<strong>从未在真实赛道上驾驶过</strong>。</p>
+
+<h2>4. 局限与影响</h2>
+<p><strong>局限 1——VAE 重建保真度：</strong>32 维 latent 空间在复杂场景（如 VizDoom）中丢失了关键的细粒度视觉信息，限制了策略性能。</p>
+<p><strong>局限 2——MDN-RNN 的累积误差：</strong>在长序列的梦境 rollout 中，预测误差逐步累积，导致后期"梦境"远离真实分布。</p>
+<p><strong>局限 3——CMA-ES 的规模限制：</strong>进化策略在 867 参数的线性模型上有效，但扩展到深度神经网络控制器时效率骤降。</p>
+
+<h2>5. 遗产——一个范式的诞生</h2>
+<p>World Models 是模型基强化学习 (MBRL) 从边缘走向主流的关键节点。PlaNet 沿用了 latent dynamics 的思路并用 RSSM 改进了 MDN-RNN；Dreamer/DreamerV2/DreamerV3 将控制器从 CMA-ES 升级为 actor-critic；Genie 将 world model 扩展到 11B 参数的互联网视频预训练。这篇论文的标题"World Models"本身成为了一个领域的名字。</p>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Ha, D. & Schmidhuber, J. (2018). World Models. <em>arXiv:1803.10122</em>.<br>
+  <strong>代码：</strong><a href="https://github.com/hardmaru/WorldModelsExperiments">github.com/hardmaru/WorldModelsExperiments</a>
+</p>
+
+</body>
+</html>

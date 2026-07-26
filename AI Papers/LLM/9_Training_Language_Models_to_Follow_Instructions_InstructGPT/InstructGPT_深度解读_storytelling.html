@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InstructGPT 深度解读 — 故事型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>InstructGPT：OpenAI 如何让 AI 从"会说话"变成"听人话"</h1>
+<div class="meta">
+  <strong>作者：</strong>Ouyang, Wu, Jiang 等 (OpenAI) · <a href="https://arxiv.org/abs/2203.02155">arXiv:2203.02155</a> · NeurIPS 2022</div>
+
+<h2>你试试——</h2>
+
+<p>打开 GPT-3，输入：<code>用三句话总结法国大革命的原因，然后用日语翻译。</code></p>
+
+<p>GPT-3 的原生回答可能会是这样：</p>
+
+<p><code>用三句话总结法国大革命的失败，然后用日语翻译：1. 财政危机 2. 社会不平等 3. ...</code></p>
+
+<p>你发现问题了吗？GPT-3 把你的问题<strong>当作了一段文本的开头</strong>，然后"自然地"续写下去。它不理解你想要的是一个回答——它只是在做它训练时唯一被要求做的事：<strong>"预测这段文本的下一个最可能的 token"</strong>。</p>
+
+<p>GPT-3 就像一个天才作家，读了整个互联网的书，但有人跟它说话时，它会开始续写你的句子而不是回答你。</p>
+
+<p>InstructGPT 解决了这个问题。它用了人类反馈——<strong>真人对模型回答进行"点赞/踩"</strong>——来教模型：当一个人说"做 X"的时候，正确的回应是"做 X 的结果"，而不是续写一段关于"做 X"的文章。</p>
+
+<h2>RLHF——不靠"更多数据"，靠"人类说好"</h2>
+
+<p>训练 InstructGPT 有三个阶段。简单说就是：<strong>先模仿好学生的样子、再让老师打分、最后用分数做自我改进。</strong></p>
+
+<p><strong>第一步：监督微调。</strong>OpenAI 雇了 40 个标注员，写了几千条"理想问答对"——比如问"解释光合作用"，写一个高质量的回答。用这些示例微调 GPT-3。模型学会了"人们期望什么样的回答格式"。</p>
+
+<p><strong>第二步：训练"偏好评分器"。</strong>对于同一个问题，让第一步的模型生成 4-9 个不同回答。标注员<strong>排序</strong>——不是打分，而是排"这个最好、这个其次、这个最差"。排序比打分可靠得多——你很难说某个回答值 7.4 分还是 7.6 分，但你一眼就知道哪个更好。用这些排序数据训练一个奖励模型（RM），让它学会预测"人类会觉得哪个回答更好"。</p>
+
+<p><strong>第三步：强化学习。</strong>用 PPO 算法，让模型生成回答 → RM 评分 → 根据分数更新模型参数 → 重复。过程中不断提醒模型"不要离你最初学到的语言能力太远"——这就是 KL 散度惩罚的作用。</p>
+
+<p>三步走完——InstructGPT 诞生了。论文描述这个过程：</p>
+
+<blockquote>"Our approach to aligning language models is based on recent advances in RLHF. We first collect human-written demonstrations, then collect human-labeled comparisons between model outputs, and finally fine-tune a language model using PPO." (Section 2)</blockquote>
+
+<h2>13 亿参数是怎么打败 1750 亿的？</h2>
+
+<p>在所有实验结果中，最让人瞠目结舌的是这个：</p>
+
+<p>标注员被问到"你更喜欢哪个模型的回答？"在对决中，<strong>InstructGPT 1.3B 以 85% 的偏好率击败了 GPT-3 175B</strong>。</p>
+
+<p>让我重复一遍——一个对齐后的 13 亿参数模型，在人类眼中比 1750 亿参数的原始 GPT-3 好 85%。</p>
+
+<p>规模差距是 <strong>100 倍</strong>。但偏好差距却偏向小模型。这推翻了"更大的模型总是更好"的假设。<strong>"好用"不只是"会回答"——是"听懂你要什么"。</strong></p>
+
+<p>在诚实度上也是如此。InstructGPT 大幅度减少了"幻觉"——即编造不存在的事实。在 TruthfulQA 上，幻觉降低了约 27%（1.3B）到 39%（175B）。在毒性测试中，InstructGPT 产生有害内容的概率大幅下降。</p>
+
+<p>你可以理解为：GPT-3 是一个读过整个互联网的学者，但它的"道德指南针"只依赖于它在互联网上看到的模式。InstructGPT 在此基础上加了一层<strong>人类偏好的滤镜</strong>——它仍然知道一切，但在输出前会"想一想"这个回答是否合适。</p>
+
+<h2>这条路不是完美的——但它通了</h2>
+
+<p>RLHF 有一个根本性的矛盾：它对齐的是<strong>"标注员的偏好"</strong>，而不是某种普适的"人类价值观"。如果标注员普遍持有某种文化偏见，模型会学习并加强这种偏见。</p>
+
+<p>此外，RLHF 会引入"对齐税"——在某些 NLP 基准上，对齐后的模型比原始 GPT-3 表现略差。为了安全和可用性，要牺牲一点点原始能力。</p>
+
+<p>但 InstructGPT 真正改变了 AI 的发展方向。在它之前，大模型研究聚焦于一个指标：<strong>"它能做多少任务？"</strong>。在它之后，每个团队都必须回答一个新问题：<strong>"它对用户有没有用？安不安全？听不听话？"</strong></p>
+
+<p>ChatGPT 继承的正是 InstructGPT 的 RLHF 流程。你今天使用的每一条 ChatGPT 回答，背后都经过了"人类偏好奖励模型"的无形评分。而那套评分系统的第一次完整成功运行，就记录在这篇论文中。</p>
+
+<div class="golden">
+  GPT-3 证明了语言模型<strong>可以知道一切</strong>。<br>
+  InstructGPT 证明了语言模型<strong>可以被教会"怎么说话"</strong>。<br>
+  前者是知识的突破。后者是<strong>文明的突破</strong>。
+</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Ouyang, L., et al. (2022). Training Language Models to Follow Instructions with Human Feedback. <em>NeurIPS 2022</em>. arXiv:2203.02155.
+</p>
+
+</body>
+</html>

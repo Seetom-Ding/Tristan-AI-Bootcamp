@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLaMA 论文深度解析 — 学术型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;line-height:1.7;margin:1.5rem 0;border:1px solid var(--border)}
+code{font-family:"SF Mono","Fira Code",monospace;font-size:.9em}
+p{margin:1rem 0}
+strong{color:#111}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}
+td,th{border:1px solid var(--border);padding:.6rem .9rem;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.summary-box{background:linear-gradient(135deg,#f0f4ff,#faf5ff);padding:1.5rem;border-radius:12px;margin:1.5rem 0}
+.summary-box h3{margin:0 0 .5rem;color:var(--accent)}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>LLaMA: Open and Efficient Foundation Language Models — 深度解析</h1>
+<div class="meta">
+  <strong>作者：</strong>Hugo Touvron, Thibaut Lavril, Gautier Izacard 等 (Meta AI)<br>
+  <strong>论文：</strong><a href="https://arxiv.org/abs/2302.13971">arXiv:2302.13971</a> · 2023 · 引用量 12,000+<br>
+  <strong>模型：</strong><a href="https://github.com/facebookresearch/llama">github.com/facebookresearch/llama</a> ✅ 开源 (后改为开放权重)<br>
+  <strong>本文撰写日期：</strong>2026年6月13日
+</div>
+
+<h2>一句话总结</h2>
+<p>Meta AI 的 LLaMA 系列论文证明了：<strong>使用完全公开的数据（Common Crawl, Wikipedia, Gutenberg, GitHub 等）训练的小模型，在 Chinchilla 最优数据规模下，可以超越参数数量大得多但数据不足的闭源模型。</strong> LLaMA-13B 在多数基准上超越了 GPT-3 (175B)，LLaMA-65B 与 Chinchilla (70B) 和 PaLM-540B 竞争。这篇论文推动了开源 LLM 生态的爆发。</p>
+
+<div class="summary-box">
+<h3>核心数字速览</h3>
+<table>
+  <tr><td><strong>四档规模</strong></td><td>7B · 13B · 33B · 65B 参数</td></tr>
+  <tr><td><strong>训练数据</strong></td><td>1.0T (7B/13B) ~ 1.4T (33B/65B) token, 完全公开来源</td></tr>
+  <tr><td><strong>LLaMA-13B 对比</strong></td><td>参数量仅为 GPT-3 的 1/13，多数基准超越 GPT-3 (175B)</td></tr>
+  <tr><td><strong>LLaMA-65B 对比</strong></td><td>与 Chinchilla (70B) 和 PaLM-540B 竞争</td></tr>
+  <tr><td><strong>训练成本 (65B)</strong></td><td>约 1M GPU-hours (2048 A100-80GB, 21天)</td></tr>
+</table>
+</div>
+
+<h2>1. 研究动机——大模型不应该被大公司垄断</h2>
+<p>2022 年的 LLM 格局由闭源模型主导——GPT-3 (OpenAI), Gopher/Chinchilla (DeepMind), PaLM (Google)。这些模型的训练数据、代码和权重都不公开。Meta AI 的 LLaMA 团队提出了一个明确的目标：<strong>证明使用公开可获取的数据和 Chinchilla 最优训练策略，可以在比闭源模型小得多的情况下实现有竞争力的性能。</strong></p>
+
+<h2>2. 训练数据——"只用公开数据"的铁律</h2>
+<p>LLaMA 的训练数据完全来自公开可用语料，按来源和占比：</p>
+<table>
+  <tr><th>数据来源</th><th>占比</th><th>Token 数</th><th>特点</th></tr>
+  <tr><td>CommonCrawl (CCNet 过滤)</td><td>67.0%</td><td>~938B</td><td>经 fastText 语言分类 + 困惑度过滤</td></tr>
+  <tr><td>C4</td><td>15.0%</td><td>~210B</td><td>T5 的清洗语料</td></tr>
+  <tr><td>GitHub</td><td>4.5%</td><td>~63B</td><td>MIT/BSD/Apache 许可证代码</td></tr>
+  <tr><td>Wikipedia</td><td>4.5%</td><td>~63B</td><td>多语言, 去重</td></tr>
+  <tr><td>Books (Gutenberg + Books3)</td><td>4.5%</td><td>~63B</td><td>公有领域 + 电子书</td></tr>
+  <tr><td>ArXiv</td><td>2.5%</td><td>~35B</td><td>科学论文 LaTeX 源码</td></tr>
+  <tr><td>StackExchange</td><td>2.0%</td><td>~28B</td><td>高质量技术问答</td></tr>
+</table>
+<p>总计约 <strong>1.4T token</strong>。关键洞察：LLaMA 没有使用专有数据——所有来源都是公开可获取的。这为开源 LLM 的合法性奠定了基础。</p>
+
+<h2>3. 架构——Transformer 的极致工程优化</h2>
+<p>LLaMA 基于标准 Transformer Decoder，引入了几项关键的工程改进：</p>
+<ul style="margin-left:1.5rem;line-height:2;">
+  <li><strong>Pre-Norm + RMSNorm：</strong> 使用 RMSNorm 替代 LayerNorm，节省约 7% 训练时间</li>
+  <li><strong>SwiGLU 激活（PaLM 风格）：</strong> 替代 ReLU，提升 FFN 表达能力（维度设为 $\frac{2}{3} \cdot 4d$ 而非标准 $4d$ 以保持参数量不变）</li>
+  <li><strong>RoPE 位置编码（Su et al., 2021）：</strong> 旋转位置嵌入，提供更自然的相对位置建模</li>
+  <li><strong>高效因果注意力（xformers 风格）：</strong> 使用 Flash Attention 减少显存占用和计算时间</li>
+  <li><strong>Tokenizer：</strong> 基于 SentencePiece 的 BPE, 词汇量 32K, 使用字节回退处理罕见字符</li>
+</ul>
+
+<table>
+  <tr><th>模型</th><th>层数</th><th>$d_{\text{model}}$</th><th>头数</th><th>学习率</th><th>Batch Size (token)</th></tr>
+  <tr><td>LLaMA-7B</td><td>32</td><td>4096</td><td>32</td><td>$3.0 \times 10^{-4}$</td><td>4M</td></tr>
+  <tr><td>LLaMA-13B</td><td>40</td><td>5120</td><td>40</td><td>$3.0 \times 10^{-4}$</td><td>4M</td></tr>
+  <tr><td>LLaMA-33B</td><td>60</td><td>6656</td><td>52</td><td>$1.5 \times 10^{-4}$</td><td>4M</td></tr>
+  <tr><td>LLaMA-65B</td><td>80</td><td>8192</td><td>64</td><td>$1.5 \times 10^{-4}$</td><td>4M</td></tr>
+</table>
+
+<h2>4. 实验结果——小模型的逆袭</h2>
+<table>
+  <tr><th>模型</th><th>参数量</th><th>BoolQ</th><th>PIQA</th><th>HellaSwag</th><th>MMLU</th><th>ARC-c</th></tr>
+  <tr><td>GPT-3</td><td>175B</td><td>60.5</td><td>81.0</td><td>78.9</td><td>43.9</td><td>51.4</td></tr>
+  <tr><td>Chinchilla</td><td>70B</td><td>83.7</td><td>81.8</td><td>80.8</td><td>67.5</td><td>54.3</td></tr>
+  <tr><td style="background:#e8f0fe">LLaMA-13B</td><td style="background:#e8f0fe">13B</td><td style="background:#e8f0fe">78.1</td><td style="background:#e8f0fe">80.1</td><td style="background:#e8f0fe">79.2</td><td style="background:#e8f0fe">46.9</td><td style="background:#e8f0fe">52.3</td></tr>
+  <tr><td style="background:#d4e4fc"><strong>LLaMA-65B</strong></td><td style="background:#d4e4fc">65B</td><td style="background:#d4e4fc"><strong>85.3</strong></td><td style="background:#d4e4fc"><strong>82.8</strong></td><td style="background:#d4e4fc"><strong>84.2</strong></td><td style="background:#d4e4fc"><strong>63.4</strong></td><td style="background:#d4e4fc"><strong>57.3</strong></td></tr>
+</table>
+<p style="color:var(--muted);font-size:.85rem;">▲ LLaMA 的核心结果：13B 小模型在多数基准超越 GPT-3 (175B)；65B 在常识推理上超越 Chinchilla (70B)。</p>
+
+<p>最令人惊叹的数据点：<strong>LLaMA-13B 在 HellaSwag (常识推理) 上达到 79.2%，超过了 GPT-3 的 78.9%</strong>——13B 参数超越了 175B。这是 Chinchilla 定律在实践中最有力的验证。</p>
+
+<h2>5. 局限与影响</h2>
+<p><strong>局限 1——开源但非完全开放：</strong> LLaMA 最初以"研究用途"发布权重（非标准开源许可证），引发了关于"什么是真正的开源 AI"的讨论。</p>
+<p><strong>局限 2——缺少指令微调：</strong> LLaMA 是纯预训练模型，缺乏指令跟随能力。其真正的遗产是成为后续开源项目（Alpaca, Vicuna, Llama 2/3）的基石。</p>
+<p><strong>局限 3——数据版权争议：</strong> Books3 和部分 Common Crawl 数据的版权状态成为后续法律争议的焦点。</p>
+
+<h2>6. LLaMA 的遗产——开源 LLM 的"Linux 时刻"</h2>
+<p>LLaMA 不是最强大的模型。但它是<strong>第一个证明"开源 + 小模型 + 良好数据 = 闭源 + 大模型"的可行性的研究。</strong>它直接催生了 Alpaca（Stanford 用 52K 指令微调 LLaMA）、Vicuna、Koala 等项目，并奠定了 Llama 2/3/4 系列的开源路线。LLaMA 的发布日——2023 年 2 月 24 日——可以被视为开源 LLM 运动的起点。</p>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Touvron, H., et al. (2023). LLaMA: Open and Efficient Foundation Language Models. <em>arXiv:2302.13971</em>.<br>
+</p>
+
+</body>
+</html>

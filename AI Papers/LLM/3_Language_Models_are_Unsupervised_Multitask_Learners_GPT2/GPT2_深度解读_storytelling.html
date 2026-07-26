@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPT-2 深度解读 — 故事型</title>
+<style>
+:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}
+h1{font-size:2rem;margin:0 0 .3rem;line-height:1.3}
+h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.1rem;margin:1.5rem 0 .5rem;color:#333}
+.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem;line-height:1.8}
+.meta a{color:var(--accent);text-decoration:none}
+blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}
+pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;line-height:1.7;margin:1.5rem 0;border:1px solid var(--border)}
+code{font-family:"SF Mono","Fira Code",monospace;font-size:.9em}
+p{margin:1rem 0}
+strong{color:#111}
+table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}
+td,th{border:1px solid var(--border);padding:.6rem .9rem;text-align:left}
+th{background:#f9fafb;font-weight:600}
+.golden{font-size:1.25rem;font-weight:600;color:var(--accent);text-align:center;padding:2rem 1rem;border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);margin:2.5rem 0;line-height:1.5}
+@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}h1{font-size:1.5rem}}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+</head>
+<body>
+
+<h1>GPT-2：一个只会"预测下一个词"的模型，如何意外学会了翻译、问答和推理</h1>
+<div class="meta">
+  <strong>作者：</strong>Radford, Wu, Child, Luan, Amodei, Sutskever (OpenAI)<br>
+  <strong>发布：</strong>2019年2月 · 被引 20,000+</div>
+
+<h2>你猜——</h2>
+
+<p>如果有个人每天都在互联网上读东西——什么都读，新闻、论坛、维基百科、菜谱、代码文档、Reddit 帖子——读了 400 亿个单词。然后有一天你问他"巴黎是哪个国家的首都"，他答出来了。你问他"把这句话翻成法语"，他居然也能翻个大概。</p>
+
+<p>你问他："是谁教你做翻译的？"</p>
+
+<p>他挠挠头说："<strong>没有人教过我</strong>。我只是在网上见过很多'这句话英语怎么说、法语怎么说'的例子。"</p>
+
+<p>这不是科幻。这是 GPT-2。</p>
+
+<h2>GPT-2 之前，NLP 世界里有一条铁律</h2>
+
+<p>2018 年，你想做一个翻译模型？你需要收集几百万条中英对照的平行句对。你想做一个问答模型？你需要标注好的"问题-答案-文章"三元组。你想做摘要？你需要"文章-摘要"对。</p>
+
+<p>每个任务 = 一种专门的数据 = 一种专门的模型架构 = 一支专门的工程师团队。这叫做<strong>监督学习</strong>，是 NLP 领域的默认工作方式。BERT 把这套流程简化成了"预训练一个模型 + 为每个任务微调"——省了架构设计，但没省标注数据。</p>
+
+<p>然后 OpenAI 的团队扔出了一个疯狂的问题：</p>
+
+<p style="text-align:center;font-size:1.2rem;font-weight:600;color:var(--accent);">如果语言模型根本不需要标注数据呢？<br>如果它读够多的互联网文本，<br>就能<strong>自己学会</strong>翻译、问答、推理？</p>
+
+<p>这篇论文就是这个问题的一号实验报告。</p>
+
+<h2>一个神奇的数据集——WebText</h2>
+
+<p>GPT-2 之前的预训练数据来源其实很受限。GPT-1 用的是 BooksCorpus——800M 词的电子书。BERT 加了英文维基百科。这些数据集的问题是：<strong>它们太"干净"了</strong>。书和维基百科的文字都是精心编写的，段落工整、语法正确、结构统一。但真正的互联网文本不是这样的——它有对话、有列表、有代码块、有标题和副标题、有英语夹法语、有"把这段话翻成英文"这样的元指令。</p>
+
+<p>OpenAI 想要一个真正反映<strong>互联网多样性</strong>的数据集。他们的做法简单到令人发笑：去 Reddit 上找所有获得 ≥3 个赞的出站链接。然后爬那些网页。</p>
+
+<p>为什么是 Reddit？因为 Reddit 本质上是一个<strong>人工内容筛选器</strong>——人们只会上传他们认为"有价值"的链接。3 个赞的阈值过滤掉了垃圾，留下了质量至少过得去的网页。最终收集到了约 8 百万个网页、40GB 的去重文本。他们叫它 <strong>WebText</strong>。</p>
+
+<p>这个数据集的秘密不在于大（40GB 在 2019 年算大，但不是最大的），而在于<strong>"杂"</strong>。WebText 里天然就有翻译的平行文本、编程问答、文章和摘要、笑话和 punchline、食谱和步骤说明。GPT-2 没有显式地"学习翻译"——它就是在读这些网页的时候，<strong>碰巧看到了很多"像翻译一样的文本对"</strong>。</p>
+
+<p>论文这样描述这个洞察：</p>
+
+<blockquote>"...a language model with sufficient capacity will begin to learn to infer and perform these tasks in order to better model the text it sees, regardless of their method of procurement." (Section 2)</blockquote>
+
+<h2>四个模型，一条趋势线</h2>
+
+<p>OpenAI 训练了<strong>四个</strong>不同大小的 GPT-2：</p>
+
+<table>
+  <tr><th>版本</th><th>参数量</th><th>规模类比</th></tr>
+  <tr><td>Small</td><td>117M</td><td>≈ BERT<sub>BASE</sub>，12 层</td></tr>
+  <tr><td>Medium</td><td>345M</td><td>≈ BERT<sub>LARGE</sub>，24 层</td></tr>
+  <tr><td>Large</td><td>762M</td><td>36 层，第一次超越 BERT 规模</td></tr>
+  <tr><td style="background:#d4e4fc"><strong>XL (1.5B)</strong></td><td style="background:#d4e4fc"><strong>1,542M</strong></td><td style="background:#d4e4fc">48 层，当时最大的公开语言模型</td></tr>
+</table>
+
+<p>这里藏着这篇论文最核心的实验设计：<strong>四个模型只在规模上有区别，其他条件完全一致</strong>——同样的数据、同样的架构、同样的训练目标。这意味着你可以干净地观察到纯"规模效应"带来的变化。</p>
+
+<p>结果是什么？</p>
+
+<p>语言建模能力随规模<strong>平滑地</strong>上升。困惑度从 117M 到 1.5B 每个台阶都在降——<strong>没有任何趋平的迹象</strong>。这意味着如果你继续把模型做大到 10B、100B 参数，性能很可能继续提升。</p>
+
+<p>但更惊人的是<strong>零样本任务能力</strong>的变化。它不是平滑上升的——它在 1.5B 这个点上突然"<strong>涌现</strong>"。</p>
+
+<h2>一个只会猜下一个词的模型，怎么会翻译？</h2>
+
+<p>这是理解 GPT-2 最关键的心智模型转换。</p>
+
+<p>传统 NLP 的思维方式是：<strong>模型 = 任务专用架构 + 任务专用训练</strong>。你想翻译 → 设计 encoder-decoder 架构 → 用平行语料训练 → 得到翻译模型。</p>
+
+<p>GPT-2 的思维方式完全不同：<strong>所有任务都是"给定上下文、预测下一个词"的特例</strong>。</p>
+
+<p>你想翻译 "I love you" 到法语？把你的输入写成：</p>
+<pre>English: I love you
+French: Je t'aime
+English: The weather is nice today
+French:</pre>
+<p>然后让 GPT-2"预测下一个词"。它预测出 <code>Le temps est beau aujourd'hui</code>。这就是翻译。</p>
+
+<p>你想做问答？输入写成：</p>
+<pre>Question: Who wrote the novel 1984?
+Answer: George Orwell
+Question: What is the capital of France?
+Answer:</pre>
+<p>然后让模型补全。这就是问答。</p>
+
+<p>你没有训练它做翻译。你没有训练它做问答。你只是<strong>用一个自然的提示告诉它"这是一个什么类型的任务"</strong>——而它在 WebText 中见过足够多类似格式的文本，所以它理解了。</p>
+
+<p>论文里最令人惊讶的结果——<strong>零样本 LAMBADA 准确率 63.24%</strong>——就是这么来的。LAMBADA 是一个"预测文章最后一个词"的任务。比如："她打开了冰箱，拿出了一盒____"——正确答案是"牛奶"。GPT-2 没有被训练过做 LAMBADA。它只是被训练过预测下一个词。但当 LAMBADA 的测试文本被喂给它时，它用同样的"预测下一个词"的能力，猜出了正确答案——而且在 63.24% 的情况下猜对了。<strong>零样本，零微调，零标签。</strong></p>
+
+<blockquote>"GPT-2 achieves state-of-the-art results on 7 out of 8 tested language modeling datasets in a zero-shot setting." (Abstract)</blockquote>
+
+<h2>规模是怎样让"量变引发质变"的</h2>
+
+<p>Small 模型（117M）在 LAMBADA 上的准确率是 45.8%。Medium（345M）是 55.5%。Large（762M）是 60.1%。XL（1.5B）是 63.24%。</p>
+
+<p>注意这个趋势：<strong>不是跳跃，而是持续上升</strong>。如果你从 117M 画一条线到 1.5B，你会发现——每一个台阶都在提升。没有突然的"智力觉醒"。只是<strong>规模越大，模型从文本中学到的隐含任务模式就越丰富、越精确</strong>。</p>
+
+<p>在 Winograd Schema Challenge（一个经典的常识推理测试，比如"战利品太大装不进手提箱，因为它太大了"——"它"指的是战利品还是手提箱？），GPT-2 达到了 70.7%——比此前最好的有监督模型（63.7%）高了整整 7 个百分点。一个没有任何语言理解监督信号的模型，在常识推理上碾压了受过专门训练的模型。</p>
+
+<p>在 CoQA（对话式阅读理解）上，GPT-2 零样本拿了 55 F1。这听着不高，但你要意识到——<strong>它从来没被训练过回答任何问题。</strong>它只是读过很多像问答一样的对话。55 F1 意味着它在超过一半的情况下给出了有意义的答案。</p>
+
+<h2>当然，不是所有任务都这么惊艳</h2>
+
+<p>OpenAI 的团队非常诚实地把失败案例也摆在了台面上。</p>
+
+<p>翻译：WMT14 英法翻译，GPT-2 拿 5.0 BLEU。对比有监督 SOTA 的 45 BLEU——差了近 10 倍。摘要：CNN/DailyMail 上 ROUGE-L 只有 5.47。问答：Natural Questions 上 F1 仅 4.1%。</p>
+
+<p>为什么会这样？为什么它在 LAMBADA 上秒杀 SOTA，在翻译上却一塌糊涂？</p>
+
+<p>答案回到了它学习的方式。GPT-2 通过 WebText 学到的"翻译"是<strong>近似翻译</strong>——它见过论坛里有人把一句话从英文译成法文，但那不是专业翻译质量的平行语料。它在 WebText 中几乎没有见过 CNN 新闻的"标准摘要"——但见过很多论坛帖子下的 TL;DR 总结。</p>
+
+<p>论文原话坦白了这个局限：</p>
+
+<blockquote>"...on tasks that require generation, we observe that the model's performance is still quite rudimentary. For example, while GPT-2's translation quality is not competitive with current commercial systems... we do find that the model has begun to learn how to translate from one language to another." (Section 3.5)</blockquote>
+
+<p>这段话的关键词是"<strong>has begun to learn</strong>"——它开始学会了。不是"已经学会"，而是"正在学会的路上"。对于 OpenAI 来说，这已经是足够的证据去继续追求更大规模的模型。</p>
+
+<h2>它是在背题，还是真的会了？</h2>
+
+<p>你可能会有一个直觉：GPT-2 是不是只是把测试集的答案"背"下来了？毕竟 WebText 有 40GB，保不齐包含了一些测试数据。</p>
+
+<p>这是一个合情合理的质疑。作者也想到了。他们做了一个严格的<strong>8-gram 重叠分析</strong>：检查每个测试样本，看在 WebText 中是否有高度相似的文本。</p>
+
+<p>结论是：WebText 和测试集的 8-gram 重叠率在 1-6% 之间。移除重叠文档后重新训练，模型性能下降——但幅度很小。而且，重叠率高的任务并不一定表现好，重叠率低的任务也不一定表现差。</p>
+
+<p>换句话说：是的，有一些不可避免的数据泄漏（在 40GB 网页数据中这是必然的）。但<strong>泄漏不是 GPT-2 零样本能力的主要来源</strong>。泛化才是。</p>
+
+<h2>GPT-2 真正改变的是什么</h2>
+
+<p>2019 年 GPT-2 发布时，最热闹的新闻是"OpenAI 担心 GPT-2 太危险所以不发布完整模型"。媒体喜欢这个叙事。但真正重要的事情发生在水面之下。</p>
+
+<p>GPT-2 用四个模型、一条趋势线、零任务特定训练，证明了一个直到当时仍被视为疯狂的假设：<strong>语言建模——这个看似简单的"预测下一个词"任务——本身就是一种通用任务学习范式。</strong></p>
+
+<p>在此之前，"多任务学习"意味着显式地在多个标注数据集上联合训练。GPT-2 之后，"多任务学习"可能只是<strong>在足够大且多样化的文本上预测下一个词</strong>——任务信号自然蕴含在文本之中。</p>
+
+<p>这个发现直接催生了 GPT-3（175B 参数），而 GPT-3 的 few-shot 能力直接催生了 ChatGPT。今天你在和 ChatGPT 对话时，它对你问题的"理解"和你要求的"执行"，其根源可以追溯到同一行代码——就是 GPT-2 论文里那行：</p>
+<pre>w = tf.matmul(q, k, transpose_b=True)
+w = w * tf.rsqrt(d_k)</pre>
+<p>同样的 Scaled Dot-Product Attention。同样的"预测下一个词"。只是数据更多，模型更大。</p>
+
+<p>GPT-2 不是终点。但它告诉了世界<strong>这条路通往哪里</strong>。</p>
+
+<div class="golden">
+  "预测下一个词"听起来像是最笨的任务。<br>
+  但如果你用整个互联网的文本去训练它，<strong>这个最笨的任务会逼迫模型理解这个世界的结构和逻辑</strong>。<br>
+  因为要精确地预测下一个词，你其实需要理解前面的一切。
+</div>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Radford, A., et al. (2019). Language Models are Unsupervised Multitask Learners. <em>OpenAI</em>.<br>
+  <strong>代码：</strong><a href="https://github.com/openai/gpt-2">github.com/openai/gpt-2</a> · Modified MIT<br>
+  <strong>本文基于：</strong>论文全文 + OpenAI GPT-2 源码 (model.py) + GPT-2 Model Card
+</p>
+
+</body>
+</html>

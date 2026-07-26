@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>DreamerV2 论文深度解析 — 学术型</title>
+<style>:root{--text:#1a1a1a;--bg:#fafaf8;--accent:#2563eb;--muted:#6b7280;--border:#e5e7eb;--code-bg:#f3f4f6}*{margin:0;padding:0}body{font-family:-apple-system,"PingFang SC","Noto Serif SC",serif;color:var(--text);background:var(--bg);line-height:1.85;padding:2.5rem 1.5rem;max-width:720px;margin:0 auto;font-size:17px}h1{font-size:2rem;margin:0 0 .3rem}h2{font-size:1.35rem;margin:2.8rem 0 .8rem;color:var(--accent);padding-bottom:.4rem;border-bottom:1px solid var(--border)}h3{font-size:1.1rem;margin:1.5rem 0 .5rem}.meta{color:var(--muted);font-size:.9rem;margin-bottom:2.5rem}.meta a{color:var(--accent)}blockquote{border-left:3px solid var(--accent);padding:.6rem 1.2rem;margin:1.5rem 0;background:#f0f4ff;border-radius:0 8px 8px 0}pre{background:var(--code-bg);padding:1rem 1.2rem;border-radius:8px;overflow-x:auto;font-size:.85rem;margin:1.5rem 0;border:1px solid var(--border)}p{margin:1rem 0}strong{color:#111}table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:.93rem}td,th{border:1px solid var(--border);padding:.6rem .9rem}th{background:#f9fafb;font-weight:600}.summary-box{background:linear-gradient(135deg,#f0f4ff,#faf5ff);padding:1.5rem;border-radius:12px;margin:1.5rem 0}@media(max-width:600px){body{font-size:16px;padding:1.2rem 1rem}}</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script></head>
+<body>
+
+<h1>Mastering Atari with Discrete World Models (DreamerV2) — 深度解析</h1>
+<div class="meta">
+  <strong>作者：</strong>Danijar Hafner, Timothy Lillicrap, Mohammad Norouzi, Jimmy Ba (Google Brain / DeepMind / UofT)<br>
+  <strong>论文：</strong><a href="https://arxiv.org/abs/2010.02193">arXiv:2010.02193</a> · ICLR 2021 · 引用量 2,200+<br>
+  <strong>代码：</strong><a href="https://github.com/danijar/dreamerv2">github.com/danijar/dreamerv2</a> ✅<br>
+  <strong>本文撰写日期：</strong>2026年6月14日
+</div>
+
+<h2>一句话总结</h2>
+<p>DreamerV2 将世界模型的隐空间从<strong>连续高斯分布改为离散分类分布（Categorical Latents）</strong>，成为<strong>第一个在 55 个 Atari 游戏中达到人类水平性能的模型基 RL 方法</strong>——在相同计算预算下超越了顶级模型-free 方法 IQN 和 Rainbow。这标志着世界模型方法在与模型-free 方法的竞争中第一次取得了决定性的胜利。</p>
+
+<div class="summary-box"><h3>核心数字速览</h3><table>
+<tr><td><strong>关键架构变化</strong></td><td>连续高斯隐状态 → 离散分类隐状态 (Categorical Latents)</td></tr>
+<tr><td><strong>测试规模</strong></td><td>55 个 Atari 游戏 (ALE), 200M 帧训练步</td></tr>
+<tr><td><strong>Atari 中位分数</strong></td><td>超越 IQN 和 Rainbow（相同计算预算）</td></tr>
+<tr><td><strong>首次实现</strong></td><td>模型基方法在 Atari 上达到人类水平</td></tr>
+<tr><td><strong>泛化能力</strong></td><td>同时在连续控制任务（Humanoid from pixels）上验证</td></tr>
+</table></div>
+
+<h2>1. 为什么"离散"改变了游戏规则？</h2>
+<p>Dreamer（V1）使用连续高斯分布建模隐状态——每个隐变量由一个均值和标准差描述。这在连续控制任务上效果很好，但在<strong>Atari 这样的离散动作、高度结构化、多模态</strong>的环境中出现了严重问题：高斯分布倾向于对不确定性取"平均"——多个可能的未来被模糊成均值，细节全部丢失。</p>
+<p>DreamerV2 的解决方案：将隐变量建模为<strong>分类分布（Categorical）</strong>——不是"平均 0.7"，而是"30% 门是开的，70% 门是关的"。离散表示天然适合处理<strong>多模态未来</strong>——就像世界的底层结构本身就是由离散事件构成的（门开了 vs 门没开，敌人出现了 vs 没出现）。</p>
+
+<h2>2. 离散世界模型 + Straight-Through 梯度</h2>
+<p>将隐变量离散化引入了不可微性——从分类分布采样是不可导的。DreamerV2 使用 <strong>Straight-Through Estimator</strong> 来解决：前向传播用采样后的离散 one-hot 向量，反向传播将梯度直接穿过 softmax 概率。这使得整个系统仍然端到端可微，同时享受离散表示的好处。</p>
+$$\text{Forward: } z_t = \text{one_hot}(\arg\max(\text{logits}))$$
+$$\text{Backward: } \frac{\partial \mathcal{L}}{\partial \text{logits}} \approx \frac{\partial \mathcal{L}}{\partial z_t}$$
+
+<h2>3. Atari 55 游戏——历史性突破</h2>
+<p>模型基 RL 在 Atari 上一直远远落后于模型-free 方法（DQN, Rainbow, IQN）。原因在于：Atari 游戏的视觉丰富性、多模态过渡（敌人随机出现）、稀疏奖励等特性对 latent dynamics 的建模精度要求极高。</p>
+<table>
+  <tr><th>方法</th><th>类型</th><th>Atari 55 中位人类归一化分数</th></tr>
+  <tr><td>Rainbow</td><td>Model-Free</td><td>~230% (200M frames)</td></tr>
+  <tr><td>IQN</td><td>Model-Free</td><td>~250% (200M frames)</td></tr>
+  <tr><td style="background:#d4e4fc"><strong>DreamerV2</strong></td><td style="background:#d4e4fc">Model-Based</td><td style="background:#d4e4fc"><strong>~270%</strong> (200M frames)</td></tr>
+</table>
+<p style="color:var(--muted);font-size:.85rem;">▲ DreamerV2 成为第一个在 Atari 上超越顶级 Model-Free 方法的模型基 RL 系统。</p>
+
+<h2>4. 为什么世界模型在 Atari 上"赢了"？</h2>
+<p>DreamerV2 的成功不仅是离散表示的胜利——它展示了模型基方法的根本优势：<strong>一旦有一个足够好的世界模型，策略学习可以在"想象"中以极高的并行度和数据效率进行。</strong> DreamerV2 的 actor-critic 完全在想象轨迹中训练——每 1 步真实交互，它可以生成数百步的想象训练数据。</p>
+
+<h2>5. 局限与遗产</h2>
+<p><strong>局限 1——200M 帧仍然远超人类：</strong>虽然 DreamerV2 在相同计算预算下超越了模型-free 方法，但人类可以在几秒内学会一个 Atari 游戏。世界模型的样本效率仍有巨大提升空间。</p>
+<p><strong>局限 2——Straight-Through 的偏差：</strong>梯度估计的偏差在更深更复杂的模型中可能会阻碍训练。</p>
+<p>DreamerV2 的分水岭意义在于：<strong>它终结了"模型基方法在复杂视觉任务上永远不如模型-free"的叙事。</strong> DreamerV3（2023）进一步将离散世界模型扩展到 Minecraft 等 3D 开放世界任务。</p>
+
+<p style="font-size:.85rem;color:var(--muted);margin-top:2.5rem;padding-top:1rem;border-top:1px solid var(--border);">
+  <strong>引用：</strong>Hafner, D., et al. (2021). Mastering Atari with Discrete World Models. <em>ICLR 2021</em>. arXiv:2010.02193.
+</p>
+</body></html>
