@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "b9d509cdf703e2af",
+        "id": "7987f367eae8c0f3",
         "type": "tabs",
         "children": [
           {
-            "id": "6aeb65da20ec6795",
+            "id": "1080aa67d0f44d55",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Study Plan/Week 1/Day 02.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Day 02"
+              "title": "新标签页"
             }
           }
         ]
@@ -78,7 +74,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 200,
+    "collapsed": true
   },
   "right": {
     "id": "c235b6cb47798c65",
@@ -190,7 +187,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 273.5
+    "width": 273.5,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -206,10 +204,12 @@
       "latex-paren-math:Convert Active Note \\(\\), \\[\\] to $ / $$": false
     }
   },
-  "active": "6aeb65da20ec6795",
+  "active": "1080aa67d0f44d55",
   "lastOpenFiles": [
-    "Study Plan/Week 1/Day 01.md",
+    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
+    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf",
     "Study Plan/Week 1/Day 02.md",
+    "Study Plan/Week 1/Day 01.md",
     "Study Plan/Week 1/Day 03.md",
     "Study Plan/Week 1/Day 04.md",
     "Study Plan/Week 1/Day 05.md",
@@ -217,7 +217,6 @@
     "AI Papers/LLM/4_Exploring_the_Limits_of_Transfer_Learning_T5/4_T5_translation.pdf",
     "AI Papers/LLM/3_Language_Models_are_Unsupervised_Multitask_Learners_GPT2/3_Language_Models_are_Unsupervised_Multitask_Learners_GPT2.pdf",
     "AI Papers/LLM/3_Language_Models_are_Unsupervised_Multitask_Learners_GPT2/3_GPT2_translation.pdf",
-    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
     "AI Papers/LLM/2_BERT_Pre-training_of_Deep_Bidirectional_Transformers_for_Language_Understanding/2_BERT_Pre-training_of_Deep_Bidirectional_Transformers_for_Language_Understanding.pdf",
     "Study Plan/Week 4/Day 01.md",
     "Study Plan/Week 4/Day 04.md",
@@ -238,7 +237,6 @@
     "AI Papers/LLM/LoRA/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
     "Progress/Learning State.md",
     "未命名.canvas",
-    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf",
     "AI Papers/LLM/3_Language_Models_are_Unsupervised_Multitask_Learners_GPT2/GPT-2.png",
     "AI Papers/LLM/2_BERT_Pre-training_of_Deep_Bidirectional_Transformers_for_Language_Understanding/BERT.png",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/Transformer.png",
