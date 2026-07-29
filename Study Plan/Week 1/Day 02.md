@@ -40,8 +40,8 @@
 
 ## Today's Checklist
 
-- [ ] 理解 Autograd
+- [x] 理解 Autograd
 
 - [ ] 完成线性回归
 
-- [ ] 能解释 backward()
+- [x] 能解释 backward()
