@@ -4,11 +4,11 @@
     "type": "split",
     "children": [
       {
-        "id": "7987f367eae8c0f3",
+        "id": "adb8feec3a9f1048",
         "type": "tabs",
         "children": [
           {
-            "id": "1080aa67d0f44d55",
+            "id": "bf889585c01557ec",
             "type": "leaf",
             "state": {
               "type": "empty",
@@ -74,8 +74,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 200
   },
   "right": {
     "id": "c235b6cb47798c65",
@@ -204,10 +203,10 @@
       "latex-paren-math:Convert Active Note \\(\\), \\[\\] to $ / $$": false
     }
   },
-  "active": "1080aa67d0f44d55",
+  "active": "bf889585c01557ec",
   "lastOpenFiles": [
-    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf",
+    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
     "Study Plan/Week 1/Day 02.md",
     "Study Plan/Week 1/Day 01.md",
     "Study Plan/Week 1/Day 03.md",
