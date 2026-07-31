@@ -34,8 +34,8 @@
 
 ## Today's Checklist
 
-- [ ] MNIST 成功训练
+- [x] MNIST 成功训练
 
-- [ ] Accuracy 正常提升
+- [x] Accuracy 正常提升
 
-- [ ] 成功保存模型
+- [x] 成功保存模型

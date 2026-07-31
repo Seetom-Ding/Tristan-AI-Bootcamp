@@ -38,8 +38,8 @@
 
 ## Today's Checklist
 
-- [ ] 能编写 nn.Module
+- [x] 能编写 nn.Module
 
-- [ ] 理解 forward()
+- [x] 理解 forward()
 
-- [ ] 能独立搭建 MLP
+- [x] 能独立搭建 MLP
