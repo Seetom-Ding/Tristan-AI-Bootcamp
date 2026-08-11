@@ -4,39 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "7317614d5130d9ef",
+        "id": "3467011624b17980",
         "type": "tabs",
-        "dimension": 44.63307776560789,
         "children": [
           {
-            "id": "f03b921a3a023e85",
+            "id": "eb2a5431d3427c75",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "markdown",
               "state": {
-                "file": "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf"
+                "file": "Study Plan/Week 1/Day 05.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-file-text",
-              "title": "1_Attention_Is_All_You_Need"
-            }
-          }
-        ]
-      },
-      {
-        "id": "4316d19f1caae9b0",
-        "type": "tabs",
-        "dimension": 55.36692223439211,
-        "children": [
-          {
-            "id": "60a74e2a6dabc19d",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "1_Attention_Is_All_You_Need_translation"
+              "icon": "lucide-file",
+              "title": "Day 05"
             }
           }
         ]
@@ -59,7 +41,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "文件列表"
@@ -96,8 +80,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 200
   },
   "right": {
     "id": "c235b6cb47798c65",
@@ -226,15 +209,15 @@
       "latex-paren-math:Convert Active Note \\(\\), \\[\\] to $ / $$": false
     }
   },
-  "active": "60a74e2a6dabc19d",
+  "active": "eb2a5431d3427c75",
   "lastOpenFiles": [
+    "Study Plan/Week 2/Day 01.md",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf",
     "Study Plan/Week 3/Day 01.md",
     "Study Plan/Week 3/Day 02.md",
     "Study Plan/Week 3/Day 03.md",
     "Study Plan/Week 3/Day 04.md",
-    "Study Plan/Week 2/Day 01.md",
     "Study Plan/Week 2/Day 02.md",
     "Study Plan/Week 1/Day 04.md",
     "Study Plan/Week 1/Week 1 Boss.md",
