@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "3467011624b17980",
+        "id": "67d449361a500cdd",
         "type": "tabs",
         "children": [
           {
-            "id": "eb2a5431d3427c75",
+            "id": "39527c7c0a9e9ac9",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Study Plan/Week 1/Day 05.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "Day 05"
+              "title": "新标签页"
             }
           }
         ]
@@ -209,8 +205,9 @@
       "latex-paren-math:Convert Active Note \\(\\), \\[\\] to $ / $$": false
     }
   },
-  "active": "eb2a5431d3427c75",
+  "active": "39527c7c0a9e9ac9",
   "lastOpenFiles": [
+    "Study Plan/Week 1/Day 05.md",
     "Study Plan/Week 2/Day 01.md",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf",
@@ -223,7 +220,6 @@
     "Study Plan/Week 1/Week 1 Boss.md",
     "Study Plan/Week 1/Week 1 Goal.md",
     "Study Plan/Week 1/Week 1 Review.md",
-    "Study Plan/Week 1/Day 05.md",
     "Study Plan/Week 1/Day 03.md",
     "Study Plan/Week 1/Day 01.md",
     "Study Plan/Week 1/Day 02.md",
