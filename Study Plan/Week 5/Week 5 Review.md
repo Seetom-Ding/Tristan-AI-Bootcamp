@@ -18,6 +18,12 @@ token embedding 与 position embedding 分别提供什么信息？如果移除 p
 
 **我的回答：**
 
+### Q4
+
+《Attention Is All You Need》的 Table 1 同时写出 self-attention 每层复杂度 `O(n²·d)` 和 sequential operations `O(1)`。这两个结论为什么不矛盾？它们分别描述什么？
+
+**我的回答：**
+
 ## Coding
 
 ### Task
@@ -38,7 +44,7 @@ token embedding 与 position embedding 分别提供什么信息？如果移除 p
 
 ### Question
 
-提交一份简短架构实验笔记：比较本周 RNN baseline 与 causal self-attention 模型。说明要研究的限制或权衡、公平 baseline、必须控制的变量、主要指标、一个消融实验，以及什么结果会反驳你的原判断。
+结合《Attention Is All You Need》提交一份简短论文—架构实验笔记：概括 Problem、Motivation、Main Mechanism、Claim & Evidence、Limitation、Code Mapping；再选择论文关于 RNN 与 self-attention 的一项主张，设计公平 baseline、控制变量、指标和消融实验，并说明什么结果会反驳你的判断。
 
 **我的回答：**
 
@@ -47,6 +53,7 @@ token embedding 与 position embedding 分别提供什么信息？如果移除 p
 - 本周最重要的概念变化：
 - 最有价值的一次失败或调试：
 - Codex 负责了什么、我亲自验证了什么：
+- 论文中目前仍不理解或不确信的主张：
 - 目前仍无法独立实现的环节：
 - 实际投入时间与节奏：
 
@@ -61,6 +68,6 @@ token embedding 与 position embedding 分别提供什么信息？如果移除 p
 - **已掌握**：
 - **薄弱点**：
 - **常见错误**：
-- **科研产物**：待提交 RNN 与 causal self-attention 架构实验笔记
+- **科研产物**：待提交《Attention Is All You Need》基础论文—架构实验笔记
 - **复习建议**：
 - **下一周调整**：依据本次评估决定 Week 6 的 Transformer Block 深度与补强内容。

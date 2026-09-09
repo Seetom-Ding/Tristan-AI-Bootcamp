@@ -14,6 +14,12 @@
 
 - 选读 [CS224N Language Models, RNN, GRU and LSTM Notes](https://web.stanford.edu/class/cs224n/readings/cs224n-2019-notes05-LM_RNN.pdf) 中 RNN 的梯度与长依赖部分；LSTM、GRU 只理解门控为何缓解问题，不展开成独立主线。
 
+### 基础论文初读
+
+- 阅读本地 [Attention Is All You Need 英文原文](<D:/学习/信息研一学习资料/AI Bootcamp/AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf>) 的 Abstract 和 Section 1（PDF 第 1–2 页）。先不看解读，用四句话写出：旧方法、核心瓶颈、新方案、作者声称的主要收益。
+
+- 英文卡住时再对照 [中文翻译](<D:/学习/信息研一学习资料/AI Bootcamp/AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf>)；把“论文原文”和“自己的解释”分开记录。
+
 ### 官方教程
 
 - 查阅 [PyTorch `nn.RNN`](https://docs.pytorch.org/docs/stable/generated/torch.nn.RNN.html)，画出输入、输出与 hidden state 的 shape 关系。
@@ -40,4 +46,4 @@
 
 - [ ] 能追踪 forward、loss 和 generation 的关键 Tensor shape
 
-- [ ] 完成一次代码修改和三种上下文长度实验，并解释结果边界
+- [ ] 完成一次代码修改、上下文长度实验和四句话论文初读记录

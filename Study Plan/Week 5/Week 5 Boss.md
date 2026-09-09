@@ -14,7 +14,9 @@
 
 - 修改一个架构选项，例如关闭 position embedding，并在固定 seed、数据和训练预算下比较 validation loss、生成样例与行为差异
 
-- 提交架构审查与实验结论：模型在做什么、为什么没有未来泄漏、Codex 曾生成什么问题、证据是否支持你的判断，以及 Week 6 最值得验证的假设
+- 将模型代码映射到《Attention Is All You Need》的 Figure 1、Section 3.2.1、3.2.3 与 3.5，注明当前最小模型尚未包含哪些原论文模块
+
+- 提交架构审查与论文实验结论：模型在做什么、为什么没有未来泄漏、Codex 曾生成什么问题、代码或实验支持了论文中的哪项主张、证据局限，以及 Week 6 最值得验证的假设
 
 成功完成 Boss、提交 Week 5 Review，且 Knowledge、Coding、Debugging、Thinking 四个维度均获得可用证据后：
 

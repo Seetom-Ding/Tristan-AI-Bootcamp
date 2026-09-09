@@ -1,6 +1,6 @@
 # AI Bootcamp Learning State
 
-- **Last Updated**：2026-09-09（Week 5 已按学生确认的 Codex 辅助学习方式重构；Week 1–4 周评估仍为空）
+- **Last Updated**：2026-09-09（学生确认从 Week 5 起逐步加入基础论文读写；Week 1–4 周评估仍为空）
 - **Current Week**：Week 5
 - **Week Status**：计划已创建并开启；属于未获得前四周掌握证据时的基线计划
 - **Current Rank**：AI Novice
@@ -40,9 +40,16 @@
 - 对 attention 核心矩阵运算、causal mask、KV cache 等高价值机制，保留一次最小独立补全或推导，用来检验是否真正理解。
 - 评估重点是能否解释、审查、修改、调试和设计可信实验，而不是能否从空文件背写完整项目。
 
+## Confirmed Paper-reading Method
+
+- 从 Week 5 开始逐步加入基础论文读写，优先使用 `AI Papers\LLM` 中与当周架构直接相关的本地材料。
+- 先读英文原文的少量关键章节和图表，遇到语言阻塞再看中文翻译；自己的判断完成后再看解读材料。
+- Week 5–8 以一篇基础论文的分段阅读、架构映射和短笔记为主，不要求完整复现，也不以读完页数作为掌握证据。
+- 阅读产出至少区分 Problem、Motivation、Main Mechanism、Claim & Evidence、Limitation 和 Code Mapping；论文主张需要通过代码、实验或反例思考进行检验。
+
 ## Research-thinking Progress
 
-- 当前阶段目标：从文本、token 与序列表示过渡到 causal self-attention，并开始进行架构权衡与公平实验。
+- 当前阶段目标：从文本、token 与序列表示过渡到 causal self-attention，并通过基础论文读写建立架构、代码、主张与证据之间的联系。
 - 当前证据：暂无
 
 ## Pace and Workload
@@ -53,6 +60,7 @@
 
 - 执行 `Study Plan\Week 5`，完成 Boss 后填写 `Week 5 Review.md`，用新的直接证据进行首次正式评估
 - Coding 证据优先采集陌生代码理解、架构映射、关键修改、测试设计和有证据的调试过程
+- Paper 证据从《Attention Is All You Need》的分段阅读与论文—架构实验笔记开始；不要求 Week 5 完整通读或复现
 - Week 1–4 Review 均未填写；如后续发现先修缺口，在 Week 6 只加入针对性补强，不倒推低分
 
 ## Stage Transition Note

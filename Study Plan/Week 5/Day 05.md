@@ -8,17 +8,17 @@
 
 ## 上午（09:00--11:30）
 
-### 网课
+### 基础论文精读
 
-- 回看 [CS224N 2026 Assignment 3](https://web.stanford.edu/class/cs224n/assignments_w26/a3.pdf) 中 decoder-only Transformer 与位置表示相关内容，明确 next-token 训练为何必须阻止访问未来 token。
+- 阅读本地 [Attention Is All You Need 英文原文](<D:/学习/信息研一学习资料/AI Bootcamp/AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf>) 的 Section 3.2.3、3.5 和 Section 4 / Table 1（PDF 第 5–7 页），找出 causal mask、位置编码、复杂度与顺序操作数的原始论述。
 
-- 画出长度为 6 的 causal mask，逐行说明位置 `t` 可以关注哪些 key，以及 padding mask 与 causal mask 解决的问题为何不同。
+- 先独立写一页基础论文笔记：Problem、Motivation、Main Mechanism、Claim & Evidence、Limitation、Code Mapping；完成后再看同目录的 [学术型解读](<D:/学习/信息研一学习资料/AI Bootcamp/AI Papers/LLM/1_Attention_Is_All_You_Need/Transformer_深度解析_academic.html>) 修正遗漏，不照抄解读。
 
 ### 官方教程
 
 - 查阅 [PyTorch `torch.tril`](https://docs.pytorch.org/docs/stable/generated/torch.tril.html)，用下三角矩阵构造 causal mask。
 
-- 复查 [PyTorch Scaled Dot Product Attention Tutorial](https://docs.pytorch.org/tutorials/intermediate/scaled_dot_product_attention_tutorial.html) 中 `is_causal` 的行为，只用作验证自己的 mask。
+- 画出长度为 6 的 causal mask，逐行说明位置 `t` 可以关注哪些 key，以及 padding mask 与 causal mask 解决的问题为何不同。
 
 ## 下午（15:00--17:30）
 
@@ -32,7 +32,7 @@
 
 ## Challenge
 
-如果因果性测试通过，是否就能证明整个语言模型没有未来信息泄漏？列出数据构造、target shift 和 generation 中仍需检查的路径。
+论文 Table 1 中 self-attention 的 sequential operations 是 `O(1)`，是否意味着计算量和运行时间也是 `O(1)`？结合 `O(n²·d)`、并行性与硬件条件解释。
 
 ## Today's Checklist
 
@@ -40,4 +40,4 @@
 
 - [ ] 因果性测试能通过正确实现并捕获两类错误实现
 
-- [ ] 完成两次有证据的 bug 定位，并追踪完整 forward、loss 与 generation 路径
+- [ ] 完成两次有证据的 bug 定位和一页基础论文笔记
