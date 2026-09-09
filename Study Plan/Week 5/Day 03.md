@@ -1,4 +1,4 @@
-# Language Models and the RNN Bottleneck
+# Read the RNN Language-Model Bottleneck
 
 ⭐ **Difficulty**：★★★☆☆
 
@@ -24,20 +24,20 @@
 
 ### Coding Lab
 
-- 使用 Day 01 的字符级 batch 与 Day 02 的 embedding，搭建一个单层 `nn.RNN` next-token baseline。
+- 先画出 `token ids → embedding → RNN → logits → cross-entropy` 架构图，再让 Codex 生成与图一致、没有多余抽象的单层 `nn.RNN` next-token baseline。
 
-- 训练到 loss 明显低于随机猜测基线，记录 seed、上下文长度、参数量、train loss、validation loss 和一段生成文本。
+- 逐段阅读 forward 与 generation loop：标注 input、output、hidden、logits 的 shape，指出 hidden state 如何把历史信息传到下一时间步；用断点或打印验证一次完整路径。
 
-- 分别用 `T=16、64、128` 完成前向计时，每种设置先 warm-up 再重复测量；只记录现象，不据此作硬件性能结论。
+- 修改一个可观察行为，例如 hidden size 或上下文长度；训练到 loss 低于随机猜测基线，并对 `T=16、64、128` 重复计时，记录参数量、验证 loss、生成样例与谨慎结论。
 
 ## Challenge
 
-为什么 RNN 即使参数量很小，也难以在序列长度维度充分并行？区分“能批量处理多个样本”和“能并行处理同一样本的多个时间步”。
+在不看实现的情况下，预测 generation loop 为什么不能像训练 forward 那样一次得到所有未来 token；结合代码指出自回归依赖发生在哪一行。
 
 ## Today's Checklist
 
-- [ ] 完成可训练的字符级 RNN next-token baseline
+- [ ] 完成 RNN 语言模型架构图并与代码逐模块对应
 
-- [ ] 记录训练、验证与生成结果以及关键 Tensor shape
+- [ ] 能追踪 forward、loss 和 generation 的关键 Tensor shape
 
-- [ ] 完成三种上下文长度的重复计时并写出谨慎观察
+- [ ] 完成一次代码修改和三种上下文长度实验，并解释结果边界

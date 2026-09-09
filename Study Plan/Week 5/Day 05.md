@@ -1,4 +1,4 @@
-# Causal Masking without Future Leakage
+# Test Causality and Future Leakage
 
 ⭐ **Difficulty**：★★★★★
 
@@ -24,20 +24,20 @@
 
 ### Coding Lab
 
-- 为 Day 04 的单头 attention 加入 causal mask，在 softmax 前屏蔽未来位置，并检查输出不存在 NaN。
+- 先写因果性测试规格：允许变化与必须保持不变的输出位置、容差、至少两个边界情况；再让 Codex 为 Day 04 模块加入 causal mask 和测试骨架。
 
-- 编写因果性测试：只修改某位置之后的 token，验证该位置及之前的输出保持不变；再故意移除 mask，确认测试能够发现泄漏。
+- 审查 mask 的方向、应用时机、填充值和 broadcast shape；运行“修改未来 token 不影响过去输出”的测试，并解释测试为何能检测泄漏。
 
-- 把 token embedding、position embedding、causal attention 和输出投影连接为最小 next-token 模型，完成一次前向、loss 与 backward。
+- 让 Codex 分别注入“mask 方向反了”和“softmax 后才 mask”两个错误，不提前查看答案；依靠 attention matrix、因果性测试和 NaN 检查定位并修复，再连接最小 next-token 模型。
 
 ## Challenge
 
-一个语言模型训练 loss 异常低，但逐 token 生成完全不可用。为什么“训练时看到了未来 token”是优先排查项？你会用什么最小测试证明或排除它？
+如果因果性测试通过，是否就能证明整个语言模型没有未来信息泄漏？列出数据构造、target shift 和 generation 中仍需检查的路径。
 
 ## Today's Checklist
 
-- [ ] 正确构造并应用 causal mask
+- [ ] 能从代码解释 causal mask 的方向、时机、数值和 shape
 
-- [ ] 因果性测试能通过正确实现并捕获无 mask 实现
+- [ ] 因果性测试能通过正确实现并捕获两类错误实现
 
-- [ ] 最小 causal attention 模型完成 forward、loss 与 backward
+- [ ] 完成两次有证据的 bug 定位，并追踪完整 forward、loss 与 generation 路径

@@ -1,6 +1,6 @@
 # AI Bootcamp Learning State
 
-- **Last Updated**：2026-09-09（按学生明确指示进入 Week 5；Week 1–4 周评估仍为空）
+- **Last Updated**：2026-09-09（Week 5 已按学生确认的 Codex 辅助学习方式重构；Week 1–4 周评估仍为空）
 - **Current Week**：Week 5
 - **Week Status**：计划已创建并开启；属于未获得前四周掌握证据时的基线计划
 - **Current Rank**：AI Novice
@@ -33,6 +33,13 @@
 
 - 暂无证据
 
+## Confirmed Learning Method
+
+- Codex 可以生成工程骨架、重复代码与初始测试，不再把长篇手敲或 API 记忆作为主要学习成果。
+- 学生主要负责理解模型架构与目标、追踪数据流和 Tensor shape、阅读陌生代码、预测行为、修改模块、定位错误并验证结论。
+- 对 attention 核心矩阵运算、causal mask、KV cache 等高价值机制，保留一次最小独立补全或推导，用来检验是否真正理解。
+- 评估重点是能否解释、审查、修改、调试和设计可信实验，而不是能否从空文件背写完整项目。
+
 ## Research-thinking Progress
 
 - 当前阶段目标：从文本、token 与序列表示过渡到 causal self-attention，并开始进行架构权衡与公平实验。
@@ -45,13 +52,14 @@
 ## Active Review Priorities
 
 - 执行 `Study Plan\Week 5`，完成 Boss 后填写 `Week 5 Review.md`，用新的直接证据进行首次正式评估
+- Coding 证据优先采集陌生代码理解、架构映射、关键修改、测试设计和有证据的调试过程
 - Week 1–4 Review 均未填写；如后续发现先修缺口，在 Week 6 只加入针对性补强，不倒推低分
 
 ## Stage Transition Note
 
 - 2026-09-09：学生明确要求直接开启 Week 5，因此当前周与路线阶段已切换。
 - 该切换只表示开始新的学习阶段，不表示 Week 1–4 已通过掌握度评估。
-- Week 5 采用保守基线：tokenization、embedding、RNN 历史瓶颈、单头 self-attention 与 causal mask；多头和完整 Transformer Block 留到 Week 6。
+- Week 5 采用 Codex 辅助、理解优先的基线：tokenization、embedding、RNN 历史瓶颈、单头 self-attention 与 causal mask；多头和完整 Transformer Block 留到 Week 6。
 
 ## Fixed Foundation Baseline
 

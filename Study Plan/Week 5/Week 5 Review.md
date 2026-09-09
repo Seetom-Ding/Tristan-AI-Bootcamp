@@ -22,7 +22,7 @@ token embedding 与 position embedding 分别提供什么信息？如果移除 p
 
 ### Task
 
-不参考本周代码，写出单头 causal self-attention 的核心 PyTorch 实现，标注输入、scores、weights 与输出 shape；再写一个最小测试，验证修改未来 token 不会改变过去位置的输出。
+由 Mentor 提供一段本周未见过的 causal self-attention 实现。请逐段解释输入、Q/K/V、scores、weights 与输出的数据流和 shape，指出至少一个潜在正确性风险，并通过修改代码或增加测试验证判断；不要求从空文件重写完整模块。
 
 **我的回答 / 代码位置：**
 
@@ -46,6 +46,7 @@ token embedding 与 position embedding 分别提供什么信息？如果移除 p
 
 - 本周最重要的概念变化：
 - 最有价值的一次失败或调试：
+- Codex 负责了什么、我亲自验证了什么：
 - 目前仍无法独立实现的环节：
 - 实际投入时间与节奏：
 

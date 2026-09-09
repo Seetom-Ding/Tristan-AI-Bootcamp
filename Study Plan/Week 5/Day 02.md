@@ -1,4 +1,4 @@
-# Token Embeddings and Position
+# Trace Token Embeddings and Position
 
 ⭐ **Difficulty**：★★★☆☆
 
@@ -24,20 +24,20 @@
 
 ### Coding Lab
 
-- 创建 token embedding 与 learned position embedding，将 `[B, T]` token ids 映射为 `[B, T, C]`。
+- 让 Codex 生成一个刻意保持简洁的 `TokenPositionEmbedding` 模块和最小测试；在运行前标注每行输入输出 shape、参数表大小和广播发生的位置。
 
-- 用断言检查 `T` 不超过最大上下文长度，并在 forward 中标注每一步 Tensor shape。
+- 阅读实现后，用自己的话解释 token id、查表、position ids、向量相加以及 `[B, T, C]` 输出之间的关系；删除任何无法解释的封装。
 
-- 对同一个 token 放在两个不同位置，分别检查 token 部分、position 部分和相加后表示；完成一次反向传播，确认两张 embedding 表都有预期梯度。
+- 修改代码加入 `T <= max_context` 断言和“关闭 position embedding”开关；检查同一 token 在不同位置的表示，并通过一次 backward 审查两张 embedding 表的梯度。
 
 ## Challenge
 
-如果两个相同 token 出现在不同位置，它们进入模型的向量应该完全相同吗？分别讨论“没有位置表示”和“加入位置表示”时模型能与不能表达什么。
+不运行代码，先预测交换两个 token 后，开启与关闭 position embedding 时各个中间 Tensor 如何变化；再用程序验证，解释预测不一致之处。
 
 ## Today's Checklist
 
-- [ ] 完成 token embedding 与 learned position embedding 模块
+- [ ] 为 embedding 模块完成逐行 shape 与参数量标注
 
-- [ ] 从 `[B, T]` 正确得到 `[B, T, C]` 并通过 shape 断言
+- [ ] 能不看说明解释 `[B, T] → [B, T, C]` 的完整数据流
 
-- [ ] 用梯度与样例验证 token 信息和位置信息都进入模型
+- [ ] 完成位置开关修改，并用样例与梯度验证其行为
