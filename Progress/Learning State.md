@@ -1,11 +1,11 @@
 # AI Bootcamp Learning State
 
-- **Last Updated**：2026-07-25（CS224N / CS336 后续课程主干已确认，尚未评估）
-- **Current Week**：Week 1
-- **Week Status**：计划已创建，尚未评估
+- **Last Updated**：2026-09-09（按学生明确指示进入 Week 5；Week 1–4 周评估仍为空）
+- **Current Week**：Week 5
+- **Week Status**：计划已创建并开启；属于未获得前四周掌握证据时的基线计划
 - **Current Rank**：AI Novice
 - **XP**：0 / 500
-- **Roadmap Stage**：Stage 1 — Deep Learning Foundations
+- **Roadmap Stage**：Stage 2 — Modern Deep Learning and LLM Foundations
 - **Next-stage Readiness**：待验证
 
 ## Current Mastery Snapshot
@@ -35,16 +35,23 @@
 
 ## Research-thinking Progress
 
-- 当前阶段目标：观察训练成功与失败的原因，识别关键变量。
+- 当前阶段目标：从文本、token 与序列表示过渡到 causal self-attention，并开始进行架构权衡与公平实验。
 - 当前证据：暂无
 
 ## Pace and Workload
 
-- 待通过 Week 1 Reflection 确认
+- 待通过 Week 5 Reflection 确认
 
 ## Active Review Priorities
 
-- 完成 Week 1 学习后填写 `Study Plan\Week 1\Week 1 Review.md`，再进行首次评估
+- 执行 `Study Plan\Week 5`，完成 Boss 后填写 `Week 5 Review.md`，用新的直接证据进行首次正式评估
+- Week 1–4 Review 均未填写；如后续发现先修缺口，在 Week 6 只加入针对性补强，不倒推低分
+
+## Stage Transition Note
+
+- 2026-09-09：学生明确要求直接开启 Week 5，因此当前周与路线阶段已切换。
+- 该切换只表示开始新的学习阶段，不表示 Week 1–4 已通过掌握度评估。
+- Week 5 采用保守基线：tokenization、embedding、RNN 历史瓶颈、单头 self-attention 与 causal mask；多头和完整 Transformer Block 留到 Week 6。
 
 ## Fixed Foundation Baseline
 
