@@ -1,6 +1,6 @@
 # AI Bootcamp Learning State
 
-- **Last Updated**：2026-09-09（学生确认从 Week 5 起逐步加入基础论文读写；Week 1–4 周评估仍为空）
+- **Last Updated**：2026-09-20（加入“前沿扫描—路线决策—学习状态”动态更新机制；Week 1–4 周评估仍为空）
 - **Current Week**：Week 5
 - **Week Status**：计划已创建并开启；属于未获得前四周掌握证据时的基线计划
 - **Current Rank**：AI Novice
@@ -92,6 +92,20 @@
 - 后续分支：Distributed Training、LLM Compression / Quantization
 - 原则：Week 9+ 根据能力证据进入，不因方向已确认而跳过 Transformer、性能度量和实验设计基础。
 - 课程安排：Week 5–8 选学 CS224N 的 Transformer / LLM 基础；Week 9+ 以 CS336: Language Modeling from Scratch 为主干，并按评估结果选择作业。
+
+## Research Watchlist and Route Update
+
+- **最近扫描**：2026-09-20；范围为 LLM inference、serving/runtime、KV cache、attention kernel 与系统—硬件协同；以 MLSys 2025/2026 proceedings 和 arXiv 一手论文为主。
+- **扫描结论**：当前主线无需改变。近期工作仍集中在 KV-cache 与内存/IO、prefill/decode 与 TTFT/TPOT、请求调度，以及面向新硬件的 attention kernel 共设计，因此先修顺序“Transformer → 解码与 KV cache → 性能度量 → Serving/Runtime → Kernel”保持有效。
+- **近期可追踪样本**：
+  - [FlashInfer（MLSys 2025）](https://proceedings.mlsys.org/paper_files/paper/2025/hash/dbf02b21d77409a2db30e56866a8ab3a-Abstract-Conference.html)：把 KV-cache 布局、可组合 attention kernel 和动态调度放在同一推理引擎中；适合 Week 9+ 在理解 KV cache、batching 和 GPU memory 后阅读。
+  - [SOLA（MLSys 2025）](https://proceedings.mlsys.org/paper_files/paper/2025/hash/bc82dbfbfa43232be85b8d9838f49c3e-Abstract-Conference.html)：以 TTFT/TPOT 和 SLO attainment 为核心的状态感知调度；提示 Serving 学习不能只看平均吞吐，还要看请求级指标与公平性。
+  - [FlashAttention-4（arXiv, 2026）](https://arxiv.org/abs/2603.05451)：针对 Blackwell 的异构硬件瓶颈进行算法—kernel 共设计；暂列后续 kernel 主线，先补 GPU memory hierarchy、roofline、Triton/CUDA 与 profiling。
+  - [CacheFlow（arXiv, 2026）](https://arxiv.org/abs/2604.25080)：将长上下文 KV-cache 恢复视为跨 token/layer/GPU 的计算—IO 调度问题；暂列长上下文与缓存恢复专题，不提前挤占 Week 5–8 基础。
+  - [SHIP（MLSys 2026）](https://proceedings.mlsys.org/paper_files/paper/2026/hash/9c20f16b05f5e5e70fa07e2a4364b80e-Abstract-Conference.html)：展示 SRAM-based 大规模推理管线与内存带宽瓶颈；作为硬件—系统协同的远期案例，不作为当前必读。
+- **本轮路线决策**：Week 5–8 不改核心内容；从 Week 8 系统桥开始强化 TTFT/TPOT、prefill/decode、KV-cache memory accounting 和可复现实验。Week 9+ 优先安排 FlashInfer/SOLA 类型的 Serving 论文卡，再根据掌握度进入 kernel 与长上下文缓存专题。
+- **暂缓项**：需要大规模硬件、复杂分布式部署或尚未有可复现实物证据的热点；保留在 watchlist，不因标题新颖而改变下一周负荷。
+- **下次扫描规则**：创建下一份 Week 5+ 周计划前重新检索；每次只选一个当前可行动的新增阅读，并记录“为什么现在、先修缺口、验证方式”。
 
 ## Long-term Direction
 
