@@ -6,6 +6,7 @@
       {
         "id": "9cecfe5781501981",
         "type": "tabs",
+        "dimension": 53.96301188903567,
         "children": [
           {
             "id": "5205ca7e3481eaf3",
@@ -24,6 +25,7 @@
       {
         "id": "d6f414c142319308",
         "type": "tabs",
+        "dimension": 46.03698811096433,
         "children": [
           {
             "id": "c41d34f76122239c",
@@ -230,16 +232,17 @@
   },
   "active": "5205ca7e3481eaf3",
   "lastOpenFiles": [
-    "AI Papers/LLM/LoRA/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
-    "AI Papers/LLM/LoRA/LORA.pdf",
     "Study Plan/Week 5/Day 01.md",
-    "Study Plan/Week 5/Day 04.md",
     "Study Plan/Week 5/Day 02.md",
-    "Study Plan/Week 5/Day 03.md",
-    "Study Plan/Week 5/Day 05.md",
-    "Study Plan/Week 5/Week 5 Boss.md",
-    "Study Plan/Week 5/Week 5 Goal.md",
     "Study Plan/Week 5/Week 5 Review.md",
+    "Study Plan/Week 5/Week 5 Goal.md",
+    "Study Plan/Week 5/Week 5 Boss.md",
+    "Study Plan/Week 5/Day 05.md",
+    "Study Plan/Week 5/Day 04.md",
+    "Study Plan/Week 5/Day 03.md",
+    "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_Open_and_Efficient_Foundation_Language_Models.pdf",
+    "AI Papers/LLM/LoRA/LORA.pdf",
+    "AI Papers/LLM/LoRA/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
     "Study Plan/Week 2/Day 01.md",
     "Study Plan/Week 1/Day 05.md",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
@@ -268,7 +271,6 @@
     "AI Papers/LLM/2_BERT_Pre-training_of_Deep_Bidirectional_Transformers_for_Language_Understanding/BERT.png",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/Transformer.png",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/实例.png",
-    "AI Papers/LORA.pdf",
-    "AI Papers/未命名.base"
+    "AI Papers/LORA.pdf"
   ]
 }
