@@ -53,7 +53,8 @@
               "title": "两个月大模型-Agent速通路线"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -242,11 +243,12 @@
       "latex-paren-math:Convert Active Note \\(\\), \\[\\] to $ / $$": false
     }
   },
-  "active": "8d96eb6154df86bf",
+  "active": "c7130f341b6d1761",
   "lastOpenFiles": [
+    "实习岗位/检索agent设计.png",
+    "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_Open_and_Efficient_Foundation_Language_Models_Analysis.md",
     "实习岗位/学习地图-大模型与Agent.md",
     "实习岗位/两个月大模型-Agent速通路线.md",
-    "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_Open_and_Efficient_Foundation_Language_Models_Analysis.md",
     "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_Open_and_Efficient_Foundation_Language_Models.pdf",
     "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_translation.pdf",
     "AI Papers/LLM/4_Exploring_the_Limits_of_Transfer_Learning_T5/4_Exploring_the_Limits_of_Transfer_Learning_with_a_Unified_Text-to-Text_Transformer_T5_Analysis.md",
