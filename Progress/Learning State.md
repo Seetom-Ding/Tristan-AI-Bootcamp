@@ -35,6 +35,8 @@
 
 ## Confirmed Learning Method
 
+- 2026-09-22：用户提供项目驱动学习思路，已整理为 `实习岗位/项目驱动学习路线-先Agent后推理.md`。执行采用“最小版本 → 发现问题 → 补原理 → 单项改进 → 对照验证”；先完成项目 A 核心闭环，再进入项目 B，知识地图用于查阅。评测和日志从早期积累。当前周、XP、掌握等级不因路线整理而改变。
+
 - Codex 可以生成工程骨架、重复代码与初始测试，不再把长篇手敲或 API 记忆作为主要学习成果。
 - 学生主要负责理解模型架构与目标、追踪数据流和 Tensor shape、阅读陌生代码、预测行为、修改模块、定位错误并验证结论。
 - 对 attention 核心矩阵运算、causal mask、KV cache 等高价值机制，保留一次最小独立补全或推导，用来检验是否真正理解。
@@ -94,6 +96,17 @@
 - 课程安排：Week 5–8 选学 CS224N 的 Transformer / LLM 基础；Week 9+ 以 CS336: Language Modeling from Scratch 为主干，并按评估结果选择作业。
 
 ## Research Watchlist and Route Update
+
+### 2026-09-22 — 实习项目路线补充核对
+
+- 核对三份动态官方工程文档：[LangGraph Workflow/Agent](https://docs.langchain.com/oss/python/langgraph/workflows-agents)、[Transformers KV Cache](https://huggingface.co/docs/transformers/main/en/cache_explanation)、[vLLM Prefix Caching](https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/)。核对日期不是发表日期，不作为新论文成果。
+- 路线决定：在应用项目中按需引入工具/状态编排；进入推理项目仍要求 attention、生成循环、KV Cache 与可信测量的基础。本文档没有改变已有研究方向或正式 Week 5 内容。
+- LangGraph：解决预设流程与动态工具决策的组织问题；提供可运行示例，无专门 GPU 前提，先修为 Python 工具调用和状态。用于 A5，不因框架功能多而扩大项目。
+- Transformers Cache：解释历史 K/V 复用和增量推理；有代码示例，算力需求取决于所选模型，先修为 attention/解码。用于 B2，库接口以安装版本为准。
+- vLLM Prefix Cache：复用共享前缀，收益依赖负载及缓存命中；实现与文档公开，运行需满足具体引擎/模型/设备支持。B8 后选读，先修为 KV Cache/计时；不作为当前新增必做实验。
+- 局限与暂缓：本轮是工程机制核对，非前沿论文综述；不据文档推断个人硬件可运行性或性能收益。复杂量化、kernel、分布式、RTL 暂作定向分支。本次未新增掌握证据。
+
+### 2026-09-20 — 原研究扫描记录
 
 - **最近扫描**：2026-09-20；范围为 LLM inference、serving/runtime、KV cache、attention kernel 与系统—硬件协同；以 MLSys 2025/2026 proceedings 和 arXiv 一手论文为主。
 - **扫描结论**：当前主线无需改变。近期工作仍集中在 KV-cache 与内存/IO、prefill/decode 与 TTFT/TPOT、请求调度，以及面向新硬件的 attention kernel 共设计，因此先修顺序“Transformer → 解码与 KV cache → 性能度量 → Serving/Runtime → Kernel”保持有效。

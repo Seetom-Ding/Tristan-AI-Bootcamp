@@ -26,31 +26,31 @@
         "type": "tabs",
         "children": [
           {
-            "id": "8d96eb6154df86bf",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_Open_and_Efficient_Foundation_Language_Models_Analysis.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "8_LLaMA_Open_and_Efficient_Foundation_Language_Models_Analysis"
-            }
-          },
-          {
             "id": "c7130f341b6d1761",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "实习岗位/两个月大模型-Agent速通路线.md",
+                "file": "实习岗位/项目驱动学习路线-先Agent后推理.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "项目驱动学习路线-先Agent后推理"
+            }
+          },
+          {
+            "id": "63881cd293b7cb88",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "实习岗位/学习地图-大模型与Agent.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "两个月大模型-Agent速通路线"
+              "title": "学习地图-大模型与Agent"
             }
           }
         ]
@@ -112,8 +112,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200,
-    "collapsed": true
+    "width": 200
   },
   "right": {
     "id": "c235b6cb47798c65",
@@ -242,33 +241,38 @@
       "latex-paren-math:Convert Active Note \\(\\), \\[\\] to $ / $$": false
     }
   },
-  "active": "8d96eb6154df86bf",
+  "active": "735db9a9561a6fce",
   "lastOpenFiles": [
-    "实习岗位/LLM Inference System.png",
-    "实习岗位/两个月大模型-Agent速通路线.md",
-    "实习岗位/检索agent设计.png",
-    "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_Open_and_Efficient_Foundation_Language_Models_Analysis.md",
+    "实习岗位/项目驱动学习路线-先Agent后推理.md",
     "实习岗位/学习地图-大模型与Agent.md",
+    "实习岗位/两个月大模型-Agent速通路线.md",
+    "实习岗位/LLM Inference/LLM Inference System.png",
+    "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_Open_and_Efficient_Foundation_Language_Models_Analysis.md",
+    "实习岗位/历史版本/学习地图-调整项目顺序前-20260922-195345.md",
+    "实习岗位/历史版本",
+    "AI Papers/LLM/vLLM/Efficient_Memory_Management_for_Large_Language.pdf",
+    "AI Papers/LLM/vLLM",
+    "AI Papers/LLM/新建文件夹",
+    "实习岗位/LLM Inference",
+    "实习岗位/新建文件夹",
+    "实习岗位/检索agent设计/检索agent设计.png",
+    "实习岗位/检索agent设计",
+    "实习岗位/招聘要求/Picsew_20260921173144..JPG",
+    "实习岗位/招聘要求/IMG_3914..JPG",
+    "实习岗位/招聘要求/IMG_3913..JPG",
+    "实习岗位/招聘要求/IMG_3910..JPG",
+    "实习岗位/招聘要求/IMG_3909..JPG",
+    "实习岗位/招聘要求/IMG_3908..JPG",
+    "实习岗位/招聘要求/IMG_3904..JPG",
+    "实习岗位/招聘要求/Picsew_20260921173254..JPG",
+    "实习岗位/招聘要求",
     "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_Open_and_Efficient_Foundation_Language_Models.pdf",
     "AI Papers/LLM/8_LLaMA_Open_and_Efficient_Foundation_Language_Models/8_LLaMA_translation.pdf",
     "AI Papers/LLM/4_Exploring_the_Limits_of_Transfer_Learning_T5/4_Exploring_the_Limits_of_Transfer_Learning_with_a_Unified_Text-to-Text_Transformer_T5_Analysis.md",
     "AI Papers/LLM/LoRA/LoRA_Low-Rank Adaptation of Large Language Models_Analysis.md",
     "实习岗位/学习地图-大模型与Agent实习.md",
     "学习地图-大模型与Agent实习.md",
-    "实习岗位/Picsew_20260921173254..JPG",
-    "实习岗位/Picsew_20260921173144..JPG",
-    "实习岗位/IMG_3914..JPG",
-    "实习岗位/IMG_3913..JPG",
-    "实习岗位/IMG_3910..JPG",
-    "实习岗位/IMG_3909..JPG",
-    "实习岗位/IMG_3908..JPG",
-    "实习岗位/IMG_3904..JPG",
-    "实习岗位",
-    "招聘要求/Picsew_20260921173254..JPG",
-    "招聘要求",
     "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_Analysis.md",
-    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need_translation.pdf",
-    "AI Papers/LLM/LoRA/LORA.pdf",
     "AI Papers/LLM/9_Training_Language_Models_to_Follow_Instructions_InstructGPT/9_Training_Language_Models_to_Follow_Instructions_with_Human_Feedback_InstructGPT_Analysis.md",
     "AI Papers/LLM/7_Training_Compute-Optimal_LLMs_Chinchilla/7_Training_Compute-Optimal_Large_Language_Models_Chinchilla_Analysis.md",
     "AI Papers/LLM/LoRA/LoRA_Analysis.md",
@@ -284,12 +288,6 @@
     "Study Plan/Week 5/Day 02.md",
     "Study Plan/Week 5/Week 5 Review.md",
     "Study Plan/Week 5/Week 5 Goal.md",
-    "Study Plan/Week 5/Week 5 Boss.md",
-    "Study Plan/Week 5/Day 05.md",
-    "AI Papers/LLM/1_Attention_Is_All_You_Need/1_Attention_Is_All_You_Need.pdf",
-    "AI Papers/LLM/4_Exploring_the_Limits_of_Transfer_Learning_T5/4_Exploring_the_Limits_of_Transfer_Learning_with_a_Unified_Text-to-Text_Transformer_T5.pdf",
-    "AI Papers/LLM/4_Exploring_the_Limits_of_Transfer_Learning_T5/4_T5_translation.pdf",
-    "AI Papers/LLM/3_Language_Models_are_Unsupervised_Multitask_Learners_GPT2/3_Language_Models_are_Unsupervised_Multitask_Learners_GPT2.pdf",
     "未命名.canvas"
   ]
 }
